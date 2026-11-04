@@ -1,0 +1,2 @@
+class NotFoundPageInStore(Exception):
+    pass
