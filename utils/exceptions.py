@@ -25,3 +25,14 @@ class RegistryUrlException(Exception):
 
 class NotFoundUrlInStorage(Exception):
     """Ошибка: URL-адрес отсутствует в каталоге адресов"""
+    pass
+
+
+class UnsupportedStorePages(Exception):
+    """Ошибка: неподдерживаемый формат страниц"""
+    pass
+
+
+class UnsupportedUrlManager(Exception):
+    """Ошибка: неподдерживаемый URL-менеджер"""
+    pass
