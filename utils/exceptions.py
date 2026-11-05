@@ -16,3 +16,12 @@ class LocatorNotFound(Exception):
 class ElementsNotFound(Exception):
     """Ошибка: элементы не найдены на странице"""
     pass
+
+
+class RegistryUrlException(Exception):
+    """Ошибка регистрации URL-адреса"""
+    pass
+
+
+class NotFoundUrlInStorage(Exception):
+    """Ошибка: URL-адрес отсутствует в каталоге адресов"""
