@@ -3,7 +3,7 @@ import yaml
 from yaml.nodes import MappingNode
 from playwright.sync_api import Page
 from utils.logger import get_logger
-import exceptions
+from utils.exceptions import RegistrationLocatorsException
 
 logger = get_logger(__name__)
 
@@ -110,7 +110,7 @@ class YamlLocatorsLoader:
         if warnings:
             logger.error(f"{page_file_name}.yaml: Ошибка регистрации локаторов! "
                          f"Требуется проверка на разрешённые типы локаторов и наличие дублей.")
-            raise exceptions.RegistrationLocatorsException("\n".join(warnings))
+            raise RegistrationLocatorsException("\n".join(warnings))
 
         self._locators[page_file_name] = validated
         logger.info(f"{page_file_name}: зарегистрировано {len(validated)} локаторов")
@@ -154,24 +154,30 @@ class YamlLocatorsLoader:
         """Проверяет локатор для фрейма для последующей обработки из .yaml"""
         frame_data = value['frame']
         if not isinstance(frame_data, dict):
-            warnings.append(f"Локатор {name} должен быть словарём")
-            return None
+            warnings.append(f"Локатор '{name}' должен быть словарём")
+            return
         if 'selector' not in frame_data or 'inner' not in frame_data:
-            warnings.append(f"Локатор {name} 'frame' должен содержать 'selector' и 'inner'")
-            return None
-        if not frame_data["inner"]:
+            warnings.append(f"Локатор '{name}': 'frame' должен содержать 'selector' и 'inner'")
+            return
+        if not isinstance(frame_data['inner'], dict):
+            warnings.append(f"Локатор '{name}': 'inner' должен быть словарём")
+            return
+        if not frame_data['inner']:
             warnings.append(f"Локатор '{name}': 'inner' не может быть пустым")
-            return None
+            return
         inner_type = next(iter(frame_data['inner']))
-        if inner_type not in SUPPORTED_TYPES or inner_type == 'frame':
+        if inner_type == 'frame':
+            warnings.append(f"Локатор '{name}': вложенные frame не поддерживаются")
+            return
+        if inner_type not in SUPPORTED_TYPES:
             warnings.append(f"Локатор '{name}': неподдерживаемый тип внутри frame: '{inner_type}'")
-            return None
+            return
         return 'frame', frame_data['selector']
 
     def get_locator_by_name(self, page_file_name: str, locator_name: str, **kwargs):
         """Возвращает локатор по имени из YAML"""
         locators = self.locator_registry(page_file_name)
-        locator_name = locator_name.upper()
+        locator_name = locator_name.upper().strip()
 
         if locator_name not in locators:
             raise KeyError(
