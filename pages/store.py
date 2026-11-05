@@ -1,12 +1,12 @@
-from utils.base_page_store import BasePageStore
-from playwright.sync_api import Page
+from factory.base_pages_store import BasePagesStore
+from factory.web_context import WebContext
 from pages.main_page import MainPage
 
 
-class LivemastersStorePages(BasePageStore):
-    """Каталог страниц Livemasters"""
-    def __init__(self, page: Page, store='Магазин страниц Livemasters'):
-        super().__init__(page, store)
+class ProjectStorePages(BasePagesStore):
+    """Каталог страниц Project"""
+    def __init__(self, context: WebContext, store='Магазин страниц Project'):
+        super().__init__(context, store=store)
 
         self.page_registry([
             {'Главная страница': MainPage},
