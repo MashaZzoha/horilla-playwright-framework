@@ -9,3 +9,4 @@ class TestMainPage:
 
     def test_verify_main(self):
         with step("Открыть главную страницу"):
+            pass
