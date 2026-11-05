@@ -1,29 +1,23 @@
-from playwright.sync_api import Page, Locator, TimeoutError as PlaywrightTimeoutError
-from utils import logger
-from utils.yaml_locators_loader import YamlLocatorsLoader
+from playwright.sync_api import Locator, TimeoutError as PlaywrightTimeoutError
+from factory.web_context import WebContext
 from utils.exceptions import LocatorNotFound, ElementsNotFound
 from utils.allure_utils import step, attach_screenshot
+from utils.logger import get_logger
 
-logger = logger.get_logger(__name__)
+logger = get_logger(__name__)
 
 
 class BasePage:
     """Базовый класс страниц проекта"""
 
-    def __init__(
-            self,
-            page: Page,
-            title: str,
-            locator_loader: YamlLocatorsLoader,
-            page_file_name: str = None,
-            check: bool = True):
-
-        self.page = page
-        self.title = title
-        self.locator_loader = locator_loader
+    def __init__(self, context: WebContext, page_name: str, page_file_name: str = None):
+        self.context = context
+        self.page = context.page
+        self.yaml_locator_loader = context.yaml_locator_loader
+        self.url_manager = self.context.url_manager
         self.page_file_name = page_file_name
+        self.page_name = page_name
         self._elements_to_check = []
-        self.check = check
 
     @staticmethod
     def time_sec(timeout: int = None):
@@ -31,17 +25,17 @@ class BasePage:
 
     def _get(self, locator_name: str, **kwargs) -> Locator:
         """Возвращает Locator по названию из YAML"""
-        return self.locator_loader.get_locator_by_name(self.page_file_name, locator_name, **kwargs)
+        return self.yaml_locator_loader.get_locator_by_name(self.page_file_name, locator_name, **kwargs)
 
     def get_element(self, locator_name: str, timeout: int = None, **kwargs) -> Locator:
         """Поиск элемента, ожидание его отображения на странице"""
         locator = self._get(locator_name, **kwargs)
         try:
             locator.wait_for(state='visible', timeout=timeout)
-            logger.debug(f"[{self.title}]: найден элемент '{locator_name.upper()}'")
+            logger.debug(f"[{self.page_name}]: найден элемент '{locator_name.upper()}'")
             return locator
         except PlaywrightTimeoutError:
-            msg = (f"Не найден элемент '{locator_name.upper()}' на странице '{self.title}' "
+            msg = (f"Не найден элемент '{locator_name.upper()}' на странице '{self.page_name}' "
                    f"(за {self.time_sec(timeout)})")
             logger.error(msg)
             attach_screenshot(self.page, f"Не найден элемент: '{locator_name}'")
@@ -62,13 +56,13 @@ class BasePage:
         """
         for element in elements:
             try:
-                self.locator_loader.get_locator_by_name(
+                self.yaml_locator_loader.get_locator_by_name(
                     page_file_name=self.page_file_name,
                     locator_name=element)
                 self._elements_to_check.append(element)
-                logger.debug(f"[{self.title}]: Добавлен элемент для проверки {element.upper()}")
+                logger.debug(f"[{self.page_name}]: Добавлен элемент для проверки {element.upper()}")
             except KeyError:
-                msg = (f"[{self.title}]: Локатор '{element.upper()}' не найден "
+                msg = (f"[{self.page_name}]: Локатор '{element.upper()}' не найден "
                        f"в {self.page_file_name}.yaml. Невозможно добавить в проверку страницы.")
                 logger.error(msg)
                 raise LocatorNotFound(msg)
@@ -79,14 +73,15 @@ class BasePage:
         присущих только проверяемой странице."""
         if self._elements_to_check:
             elements_not_found = []
-            with step(f"Проверка перехода на {self.title}"):
-                with step(f"Проверка отображения {len(self._elements_to_check)} элементов на странице {self.title}"):
-                    for idx, element in enumerate(self._elements_to_check):
+            with step(f"Проверка перехода на {self.page_name}"):
+                with step(f"Проверка отображения {len(self._elements_to_check)} элементов на странице "
+                          f"{self.page_name}"):
+                    for element in self._elements_to_check:
                         if not self.has_element(element, timeout):
                             elements_not_found.append(element)
                     if elements_not_found:
                         msg = (f"Элементы: {', '.join(elements_not_found).upper()} не найдены.\n"
-                               f"Возможно не открылась страница {self.title.upper()}")
+                               f"Возможно не открылась страница {self.page_name.upper()}")
                         logger.error(msg)
                         raise ElementsNotFound(msg)
         return self
@@ -96,26 +91,27 @@ class BasePage:
         self.page.goto(url)
         return self
 
-    def click(self, locator: str):
+    def click(self, locator: str, timeout: int = None, **kwargs):
         """Нажимает на заданный элемент"""
-        self.get_element(locator).click()
+        self.get_element(locator, timeout=timeout, **kwargs).click()
         return self
 
-    def input(self, locator: str, text):
+    def input(self, locator: str, text, timeout: int = None, **kwargs):
         """Вводит значение в поле ввода"""
-        self.get_element(locator).fill(str(text))
+        self.get_element(locator, timeout=timeout, **kwargs).fill(str(text))
         return self
 
-    def get_text(self, locator: str) -> str:
+    def get_text(self, locator: str, timeout: int = None, **kwargs) -> str:
         """Получает текст из элемента"""
-        return self.get_element(locator).inner_text()
+        return self.get_element(locator, timeout=timeout, **kwargs).inner_text()
 
-    def is_visible(self, locator: str) -> bool:
+    def is_visible(self, locator: str, timeout: int = None, **kwargs) -> bool:
         """Проверка отображения элемента на экране"""
-        return self.get_element(locator).is_visible()
+        return self.get_element(locator, timeout=timeout, **kwargs).is_visible()
 
-    def clear(self, locator: str):
-        self.get_element(locator).clear()
+    def clear(self, locator: str, timeout: int = None, **kwargs):
+        """Очистка поля ввода"""
+        self.get_element(locator, timeout=timeout, **kwargs).clear()
         return self
 
     def refresh_page(self, timeout=None):
