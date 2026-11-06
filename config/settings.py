@@ -1,5 +1,4 @@
 import os
-import shutil
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -31,8 +30,3 @@ def get_settings(key: str, default=None):
 
 
 settings = SimpleNamespace(**load_settings())
-
-
-def pytest_configure(config):
-    shutil.rmtree(TRACE_DIR, ignore_errors=True)
-    TRACE_DIR.mkdir(parents=True, exist_ok=True)
