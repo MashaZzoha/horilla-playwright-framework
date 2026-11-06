@@ -12,6 +12,7 @@ from config.settings import settings
 from factory.url_manager import URLManager
 from factory.web_context import WebContext
 from pages.store import ProjectStorePages
+from utils.allure_utils import build_environment_xml, copy_environment_to
 from utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -77,7 +78,7 @@ def pytest_make_parametrize_id(config, val):
     """Читаемый формат ID параметризованных тестов"""
     return repr(val)
 
-# ----------------------------------------------------- Фикстуры -------------------------------------------------------
+# -------------------------------- Фикстуры ---------------------------------------------------------------------------
 
 
 @pytest.fixture(scope='session')
@@ -169,7 +170,7 @@ def page(browser_context: BrowserContext):
     finally:
         page.close()
 
-# ------------------------------ Скриншоты для Allure -----------------------------------------------------------------
+# ------------------------------ environment.xml и скриншоты для Allure -----------------------------------------------
 
 
 @pytest.hookimpl(tryfirst=True, hookwrapper=True)
@@ -193,6 +194,28 @@ def pytest_runtest_makereport(item, call):
         )
     except PlaywrightError as e:
         logger.warning(f"Не удалось сделать скриншот '{item.name}': {e}")
+
+
+@pytest.fixture(scope='function')
+def allure_env(tmpdir_factory):
+    """Путь до environment.xml"""
+    return tmpdir_factory.mktemp('allure').join('environment.xml').strpath
+
+
+@pytest.fixture(scope='function')
+def write_allure_env(request, allure_env):
+    """Заполняет environment.xml и копирует в alluredir после тестов"""
+    build_environment_xml(allure_env, {
+        "Browser": getattr(settings, "browser", "chromium"),
+        "Headless": getattr(settings, "headless", True),
+        "Environment": getattr(settings, "env", "local"),
+        "Base URL": getattr(settings, "base_url", "n/a")
+    })
+
+    yield
+
+    allure_dir = request.config.getoption("--alluredir", default="", skip=True)
+    copy_environment_to(allure_dir, allure_env)
 
 # ------------------------------ URL / WebContext ---------------------------------------------------------------------
 
