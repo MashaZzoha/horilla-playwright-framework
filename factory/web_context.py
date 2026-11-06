@@ -16,7 +16,7 @@ logger = get_logger(__name__)
 class WebContext:
     """Класс web-контекст. Реализует контекст для работы с браузером."""
 
-    def __init__(self, page: Page, store_pages: Type[BasePagesStore], url_manager: Type[URLManager]):
+    def __init__(self, page: Page, store_pages: Type[BasePagesStore], url_manager: URLManager):
         self.page = page
         self.yaml_locator_loader = YamlLocatorsLoader(self.page, PROJECT_ROOT, 'locators')
         self._store_pages = None
