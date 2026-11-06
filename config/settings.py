@@ -1,8 +1,12 @@
 import os
-import yaml
+import shutil
+from pathlib import Path
 from types import SimpleNamespace
 
+import yaml
+
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir))
+TRACE_DIR = Path("tmp/traces")
 
 _CONFIG_DIR = os.path.dirname(os.path.abspath(__file__))
 _SETTINGS_PATH = os.path.join(_CONFIG_DIR, "settings.yaml")
@@ -27,3 +31,8 @@ def get_settings(key: str, default=None):
 
 
 settings = SimpleNamespace(**load_settings())
+
+
+def pytest_configure(config):
+    shutil.rmtree(TRACE_DIR, ignore_errors=True)
+    TRACE_DIR.mkdir(parents=True, exist_ok=True)
