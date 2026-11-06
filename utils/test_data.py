@@ -1,7 +1,9 @@
 import random
-from utils.allure_utils import step
-from russian_names import RussianNames
+
 import cyrtranslit
+from russian_names import RussianNames
+
+from utils.allure_utils import step
 
 
 def generate_new_fio():
