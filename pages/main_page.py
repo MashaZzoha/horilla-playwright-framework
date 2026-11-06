@@ -2,7 +2,6 @@ from factory.web_context import WebContext
 from pages.base_page import BasePage
 from utils.logger import get_logger
 
-
 logger = get_logger(__name__)
 
 
