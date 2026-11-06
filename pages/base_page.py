@@ -1,7 +1,9 @@
-from playwright.sync_api import Locator, TimeoutError as PlaywrightTimeoutError
+from playwright.sync_api import Locator
+from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
+
 from factory.web_context import WebContext
-from utils.exceptions import LocatorNotFound, ElementsNotFound
-from utils.allure_utils import step, attach_screenshot
+from utils.allure_utils import attach_screenshot, step
+from utils.exceptions import ElementsNotFound, LocatorNotFound
 from utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -11,6 +13,12 @@ class BasePage:
     """Базовый класс страниц проекта"""
 
     def __init__(self, context: WebContext, page_name: str, page_file_name: str = None):
+        """
+
+        :param context:
+        :param page_name:
+        :param page_file_name:
+        """
         self.context = context
         self.page = context.page
         self.yaml_locator_loader = context.yaml_locator_loader
@@ -23,12 +31,22 @@ class BasePage:
     def time_sec(timeout: int = None):
         return f"{timeout / 1000:.1f} сек." if timeout else 'время ожидания по умолчанию'
 
-    def _get(self, locator_name: str, **kwargs) -> Locator:
-        """Возвращает Locator по названию из YAML"""
-        return self.yaml_locator_loader.get_locator_by_name(self.page_file_name, locator_name, **kwargs)
+    def _get(self, locator: str, **kwargs) -> Locator:
+        """
+        Возвращает Locator по названию из YAML
+        :param locator: YAML-локатор
+        :param kwargs: значение для динамического локатора
+        :return: Locator
+        """
+        return self.yaml_locator_loader.get_locator_by_name(self.page_file_name, locator, **kwargs)
 
     def get_element(self, locator_name: str, timeout: int = None, **kwargs) -> Locator:
-        """Поиск элемента, ожидание его отображения на странице"""
+        """
+        Поиск элемента, ожидание его отображения на странице
+        :param locator_name: YAML-локатор
+        :param timeout: время ожидания
+        :param kwargs: значение для динамического локатора
+        """
         locator = self._get(locator_name, **kwargs)
         try:
             locator.wait_for(state='visible', timeout=timeout)
@@ -41,14 +59,21 @@ class BasePage:
             attach_screenshot(self.page, f"Не найден элемент: '{locator_name}'")
             raise
 
-    def has_element(self, locator_name: str, timeout: int = None, **kwargs) -> bool:
-        """Проверка наличия или отсутствия элемента на странице"""
+    @step("Проверка отображения элемента '{}' на странице")
+    def has_element(self, locator: str, timeout: int = None, **kwargs) -> bool:
+        """
+        Проверка наличия или отсутствия элемента на странице
+        :param locator: YAML-локатор
+        :param timeout: время ожидания
+        :param kwargs: значение для динамического локатора
+        """
         try:
-            self.get_element(locator_name, timeout=timeout, **kwargs)
+            self.get_element(locator, timeout=timeout, **kwargs)
             return True
         except PlaywrightTimeoutError:
             return False
 
+    @step("Добавить элементы для проверки на странице: {elements}")
     def add_elements_to_check(self, *elements):
         """
         Добавляет уникальные элементы для проверки на странице для проверки страницы
@@ -68,9 +93,12 @@ class BasePage:
                 raise LocatorNotFound(msg)
 
     def check_page(self, timeout: int = None):
-        """Базовый метод для проверки нахождения на странице.
-         Проверка осуществляется путем поиска ключевых элементов,
-        присущих только проверяемой странице."""
+        """
+        Базовый метод для проверки нахождения на странице
+        Проверка осуществляется путем поиска ключевых элементов,
+        присущих только проверяемой странице
+        :param timeout: время ожидания
+        """
         if self._elements_to_check:
             elements_not_found = []
             with step(f"Проверка перехода на {self.page_name}"):
@@ -87,34 +115,105 @@ class BasePage:
         return self
 
     def open_page(self, url: str):
-        """Открывает страницу по указанному адресу"""
+        """
+        Открывает страницу по указанному адресу
+        :param url: имя URL из менеджера URL
+        """
         self.page.goto(url)
         return self
 
     def click(self, locator: str, timeout: int = None, **kwargs):
-        """Нажимает на заданный элемент"""
+        """
+        Нажимает на заданный элемент
+        :param locator: YAML-локатор
+        :param timeout: время ожидания
+        :param kwargs: значение для динамического локатора
+        """
         self.get_element(locator, timeout=timeout, **kwargs).click()
         return self
 
+    @step("Ввести текст '{text}' в поле ввода '{locator}'")
     def input(self, locator: str, text, timeout: int = None, **kwargs):
-        """Вводит значение в поле ввода"""
+        """
+        Вводит текст в поле ввода
+        :param locator: YAML-локатор
+        :param text: текст для ввода
+        :param timeout: время ожидания
+        :param kwargs: значение для динамического локатора
+        """
         self.get_element(locator, timeout=timeout, **kwargs).fill(str(text))
         return self
 
+    @step("Получить текст из элемента '{locator}'")
     def get_text(self, locator: str, timeout: int = None, **kwargs) -> str:
-        """Получает текст из элемента"""
+        """
+        Получить текст из элемента
+        :param locator: YAML-локатор
+        :param timeout: время ожидания
+        :param kwargs: значение для динамического локатора
+        """
         return self.get_element(locator, timeout=timeout, **kwargs).inner_text()
 
+    @step("Проверка отображения элемента '{locator}' на странице")
     def is_visible(self, locator: str, timeout: int = None, **kwargs) -> bool:
-        """Проверка отображения элемента на экране"""
+        """
+        Проверка отображения элемента на экране
+        :param locator: YAML-локатор
+        :param timeout: время ожидания
+        :param kwargs: значение для динамического локатора
+        """
         return self.get_element(locator, timeout=timeout, **kwargs).is_visible()
 
+    @step("Очистить поле ввода '{locator}'")
     def clear(self, locator: str, timeout: int = None, **kwargs):
-        """Очистка поля ввода"""
+        """
+        Очистка поля ввода
+        :param locator: YAML-локатор
+        :param timeout: время ожидания
+        :param kwargs: значение для динамического локатора
+        """
         self.get_element(locator, timeout=timeout, **kwargs).clear()
+        return self
+
+    @step("Пролистать страницу до элемента '{locator}'")
+    def scroll_to(self, locator: str, timeout: int = None, **kwargs):
+        """
+        Пролистать до элемента
+        :param locator: YAML-локатор
+        :param timeout: время ожидания
+        :param kwargs: значение для динамического локатора
+        """
+        self.get_element(locator, timeout=timeout, **kwargs).scroll_into_view_if_needed()
+        return self
+
+    @step("Ввести текст '{text}' посимвольно в элемент '{locator}'")
+    def type_text(self, locator: str, text: str, delay: int = 0, timeout: int = None, **kwargs):
+        """
+        Ввод текста посимвольно
+        :param locator: YAML-локатор
+        :param text: текст для ввода
+        :param delay: задержка между вводом символов
+        :param timeout: время ожидания
+        :param kwargs: значение для динамического локатора
+
+        """
+        self.get_element(locator, timeout=timeout, **kwargs).press_sequentially(text, delay=delay)
+        return self
+
+    @step("Нажать клавишу '{key}', находясь на элементе '{locator}'")
+    def press_key(self, locator: str, key: str, timeout: int = None, **kwargs):
+        """
+        Нажать клавишу на клавиатуре (Enter, Tab, Escape... и т.д.), находясь на элементе
+        :param locator: YAML-локатор
+        :param key: название клавиши
+        :param timeout: время ожидания
+        :param kwargs: значение для динамического локатора
+        """
+        self.get_element(locator, timeout=timeout, **kwargs).press(key)
         return self
 
     def refresh_page(self, timeout=None):
         """Обновить страницу (по умолчанию 30 сек)"""
-        self.page.reload(timeout=timeout)
+        with step(f"Обновить страницу {self.page}"):
+            self.page.reload(timeout=timeout)
         return self
