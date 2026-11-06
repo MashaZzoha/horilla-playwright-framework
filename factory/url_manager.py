@@ -1,5 +1,6 @@
 from typing import Dict, List
-from utils.exceptions import RegistryUrlException, NotFoundUrlInStorage
+
+from utils.exceptions import NotFoundUrlInStorage, RegistryUrlException
 from utils.logger import get_logger
 
 logger = get_logger(__name__)
