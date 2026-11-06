@@ -1,9 +1,11 @@
 import os
+
 import yaml
-from yaml.nodes import MappingNode
 from playwright.sync_api import Page
-from utils.logger import get_logger
+from yaml.nodes import MappingNode
+
 from utils.exceptions import RegistrationLocatorsException
+from utils.logger import get_logger
 
 logger = get_logger(__name__)
 
