@@ -1,5 +1,6 @@
 import allure
 import pytest
+
 from utils.allure_utils import step
 
 
