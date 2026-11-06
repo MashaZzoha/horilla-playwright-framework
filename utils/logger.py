@@ -20,6 +20,13 @@ class Logger:
         os.makedirs(logs_dir, exist_ok=True)
         self.log_file = os.path.join(logs_dir, log_file)
 
+        # xdist workers
+        worker_id = os.environ.get('PYTEST_XDIST_WORKER')
+        if worker_id:
+            name, ext = os.path.splitext(log_file)
+            log_file = f"{name}_{worker_id}{ext}"
+        self.log_file = os.path.join(logs_dir, log_file)
+
         self._stream_handler = self._stream_handler(self.log_level, self.formatter)
         self._file_handler = self._rotating_file_handler(self.log_file, self.log_level, self.formatter)
 
