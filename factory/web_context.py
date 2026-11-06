@@ -1,13 +1,14 @@
 from typing import Type
+
 from playwright.sync_api import Page
-from factory.yaml_locator_loader import YamlLocatorsLoader
+
+from config.settings import PROJECT_ROOT
 from factory.base_pages_store import BasePagesStore
 from factory.url_manager import URLManager
-from utils.allure_utils import step, attach_screenshot
+from factory.yaml_locator_loader import YamlLocatorsLoader
+from utils.allure_utils import attach_screenshot, step
 from utils.exceptions import UnsupportedStorePages, UnsupportedUrlManager
-from config.settings import PROJECT_ROOT
 from utils.logger import get_logger
-
 
 logger = get_logger(__name__)
 
