@@ -1,9 +1,12 @@
-import allure
 import json
-from typing import Union
 from contextlib import contextmanager
+from typing import Union
+
+import allure
 from allure_commons.types import AttachmentType
-from playwright.sync_api import Page, Error as PlaywrightError
+from playwright.sync_api import Error as PlaywrightError
+from playwright.sync_api import Page
+
 from utils.logger import get_logger
 
 logger = get_logger(__name__)
