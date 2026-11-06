@@ -1,9 +1,12 @@
 import json
+import os.path
+import shutil
 from contextlib import contextmanager
 from typing import Union
 
 import allure
 from allure_commons.types import AttachmentType
+from lxml import etree
 from playwright.sync_api import Error as PlaywrightError
 from playwright.sync_api import Page
 
@@ -50,3 +53,33 @@ def step(title: str, page: Page = None):
         raise
     finally:
         logger.info(f"END STEP: {title}")
+
+
+def build_environment_xml(path: str, params: dict):
+    """
+    Создать environment.xml с параметрами окружения
+    :param path: путь до environment.xml
+    :param params: словарь параметров
+    :return: путь до созданного файла
+    """
+    root = etree.Element('environment')
+    for key, value in params.items():
+        param = etree.SubElement(root, 'parameter')
+        etree.SubElement(param, 'key').text = str(key)
+        etree.SubElement(param, 'value').text = str(value)
+    with open(path, 'wb') as f:
+        f.write(etree.tostring(root, pretty_print=True, xml_declaration=True, encoding='utf-8'))
+        logger.debug(f"environment.xml создан: {path}")
+        return path
+
+
+def copy_environment_to(allure_dir: str, env_path: str):
+    """Копирует environment.xml в папку Allure-отчёта"""
+    if not allure_dir or not os.path.isdir(allure_dir):
+        logger.warning(f"alluredir не найден: {allure_dir}. environment.xml не скопирован")
+        return
+    if not os.path.exists(env_path):
+        logger.warning(f"environment.xml не найден: {env_path}")
+        return
+    shutil.copy(env_path, os.path.join(allure_dir, 'environment.xml'))
+    logger.debug(f"environment.xml скопирован в {allure_dir}")
