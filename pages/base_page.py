@@ -1,7 +1,6 @@
 from playwright.sync_api import Locator
 from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 
-from factory.web_context import WebContext
 from utils.allure_utils import attach_screenshot, step
 from utils.exceptions import ElementsNotFound, LocatorNotFound
 from utils.logger import get_logger
@@ -12,15 +11,15 @@ logger = get_logger(__name__)
 class BasePage:
     """Базовый класс страниц проекта"""
 
-    def __init__(self, context: WebContext, page_name: str, page_file_name: str = None):
+    def __init__(self, context, page_name: str, page_file_name: str = None):
         """
 
-        :param context:
-        :param page_name:
-        :param page_file_name:
+        :param context: WebContext
+        :param page_name: название страницы из каталога страниц
+        :param page_file_name: название .yaml-файла страницы
         """
         self.context = context
-        self.page = context.page
+        self.browser_page = context.browser_page
         self.yaml_locator_loader = context.yaml_locator_loader
         self.url_manager = self.context.url_manager
         self.page_file_name = page_file_name
@@ -56,7 +55,7 @@ class BasePage:
             msg = (f"Не найден элемент '{locator_name.upper()}' на странице '{self.page_name}' "
                    f"(за {self.time_sec(timeout)})")
             logger.error(msg)
-            attach_screenshot(self.page, f"Не найден элемент: '{locator_name}'")
+            attach_screenshot(self.browser_page, f"Не найден элемент: '{locator_name}'")
             raise
 
     @step("Проверка отображения элемента '{}' на странице")
@@ -88,7 +87,7 @@ class BasePage:
                 logger.debug(f"[{self.page_name}]: Добавлен элемент для проверки {element.upper()}")
             except KeyError:
                 msg = (f"[{self.page_name}]: Локатор '{element.upper()}' не найден "
-                       f"в {self.page_file_name}.yaml. Невозможно добавить в проверку страницы.")
+                       f"в {self.page_file_name}. Невозможно добавить в проверку страницы.")
                 logger.error(msg)
                 raise LocatorNotFound(msg)
 
@@ -99,27 +98,32 @@ class BasePage:
         присущих только проверяемой странице
         :param timeout: время ожидания
         """
-        if self._elements_to_check:
-            elements_not_found = []
-            with step(f"Проверка перехода на {self.page_name}"):
-                with step(f"Проверка отображения {len(self._elements_to_check)} элементов на странице "
-                          f"{self.page_name}"):
-                    for element in self._elements_to_check:
-                        if not self.has_element(element, timeout):
-                            elements_not_found.append(element)
-                    if elements_not_found:
-                        msg = (f"Элементы: {', '.join(elements_not_found).upper()} не найдены.\n"
-                               f"Возможно не открылась страница {self.page_name.upper()}")
-                        logger.error(msg)
-                        raise ElementsNotFound(msg)
+        if not self._elements_to_check:
+            return self
+        elements_not_found = []
+        with step(f"Проверка перехода на {self.page_name}"):
+            with step(f"Проверка отображения {len(self._elements_to_check)} элементов на странице "
+                      f"{self.page_name}"):
+                for element in self._elements_to_check:
+                    if not self.has_element(element, timeout):
+                        elements_not_found.append(element)
+                if elements_not_found:
+                    msg = (f"Элементы: {', '.join(elements_not_found).upper()} не найдены.\n"
+                           f"Возможно не открылась страница {self.page_name.upper()}")
+                    logger.error(msg)
+                    raise ElementsNotFound(msg)
         return self
+
+    def page(self, page_name: str):
+        """Получить объект новой страницы по названию из каталога страниц"""
+        return self.context.get_page(page_name)
 
     def open_page(self, url: str):
         """
         Открывает страницу по указанному адресу
         :param url: имя URL из менеджера URL
         """
-        self.page.goto(url)
+        self.browser_page.goto(url)
         return self
 
     def click(self, locator: str, timeout: int = None, **kwargs):
@@ -214,6 +218,6 @@ class BasePage:
 
     def refresh_page(self, timeout=None):
         """Обновить страницу (по умолчанию 30 сек)"""
-        with step(f"Обновить страницу {self.page}"):
-            self.page.reload(timeout=timeout)
+        with step(f"Обновить страницу {self.browser_page}"):
+            self.browser_page.reload(timeout=timeout)
         return self
