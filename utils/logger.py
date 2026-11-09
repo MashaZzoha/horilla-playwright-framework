@@ -11,7 +11,7 @@ class Logger:
             self,
             log_format: str = "%(asctime)s | %(levelname)s | %(name)s:%(lineno)d | %(message)s",
             log_level: str = 'INFO',
-            log_file: str = 'livemaster.log'):
+            log_file: str = 'horilla.log'):
 
         self.log_level = logging.getLevelName(os.environ.get('LOG_LEVEL', log_level).upper().strip())
         self.formatter = logging.Formatter(log_format)

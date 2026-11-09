@@ -9,9 +9,10 @@ from playwright.sync_api import Error as PlaywrightError
 from playwright.sync_api import Page, sync_playwright
 
 from config.settings import settings
+from factory.pages import Pages
 from factory.url_manager import URLManager
 from factory.web_context import WebContext
-from pages.store import ProjectStorePages
+from pages.store import NalogStorePages
 from utils.allure_utils import build_environment_xml, copy_environment_to
 from utils.logger import get_logger
 
@@ -43,35 +44,35 @@ def _get_browser_from_env():
     return "chromium"
 
 
-def pytest_configure(config):
-    """
-    Определить браузер по приоритету:
-    1. --all-browsers → параметризация в pytest_generate_tests
-    2. --browser → явный выбор
-    3. BROWSER (env) → из переменной
-    4. По умолчанию → chromium
-    """
-    shutil.rmtree(VIDEO_DIR, ignore_errors=True)
-    VIDEO_DIR.mkdir(parents=True, exist_ok=True)
-    shutil.rmtree(TRACES_DIR, ignore_errors=True)
-    TRACES_DIR.mkdir(parents=True, exist_ok=True)
+# def pytest_configure(config):
+#     """
+#     Определить браузер по приоритету:
+#     1. --all-browsers → параметризация в pytest_generate_tests
+#     2. --browser → явный выбор
+#     3. BROWSER (env) → из переменной
+#     4. По умолчанию → chromium
+#     """
+#     shutil.rmtree(VIDEO_DIR, ignore_errors=True)
+#     VIDEO_DIR.mkdir(parents=True, exist_ok=True)
+#     shutil.rmtree(TRACES_DIR, ignore_errors=True)
+#     TRACES_DIR.mkdir(parents=True, exist_ok=True)
+#
+#     if config.getoption("--all-browsers"):
+#         return
+#     if getattr(config.option, 'browser', None):
+#         return
+#     config.option.browser = _get_browser_from_env()
 
-    if config.getoption("--all-browsers"):
-        return
-    if getattr(config.option, 'browser', None):
-        return
-    config.option.browser = _get_browser_from_env()
 
-
-def pytest_generate_tests(metafunc):
-    """--all-browsers - параметризация browser_name"""
-    if 'browser_name' not in metafunc.fixturenames:
-        return
-    if metafunc.config.getoption('--all-browsers'):
-        metafunc.parametrize('browser_name', list(SUPPORTED_BROWSERS))
-    else:
-        browser = getattr(metafunc.config.option, 'browser', None) or _get_browser_from_env()
-        metafunc.parametrize('browser_name', [browser])
+# def pytest_generate_tests(metafunc):
+#     """--all-browsers - параметризация browser_name"""
+#     if 'browser_name' not in metafunc.fixturenames:
+#         return
+#     if metafunc.config.getoption('--all-browsers'):
+#         metafunc.parametrize('browser_name', list(SUPPORTED_BROWSERS))
+#     else:
+#         browser = getattr(metafunc.config.option, 'browser', None) or _get_browser_from_env()
+#         metafunc.parametrize('browser_name', [browser])
 
 
 def pytest_make_parametrize_id(config, val):
@@ -162,7 +163,7 @@ def browser_context(browser: Browser, request):
 
 
 @pytest.fixture(scope='function')
-def page(browser_context: BrowserContext):
+def browser_page(browser_context: BrowserContext):
     """Новая страница для каждого теста"""
     page = browser_context.new_page()
     try:
@@ -182,11 +183,11 @@ def pytest_runtest_makereport(item, call):
     if rep.when not in ('call', 'setup') or not rep.failed:
         return
 
-    page = item.funcargs.get('page')
-    if page is None:
+    browser_page = item.funcargs.get('page')
+    if browser_page is None:
         return
     try:
-        screenshot = page.screenshot()
+        screenshot = browser_page.screenshot()
         allure.attach(
             screenshot,
             name=f'Скриншот на падении ({rep.when})',
@@ -231,9 +232,15 @@ def url_manager() -> URLManager:
 
 
 @pytest.fixture(scope='function')
-def web_context(page: Page, url_manager: URLManager) -> WebContext:
+def web_context(browser_page: Page, url_manager: URLManager) -> WebContext:
     """Вэб-контекст: page + создаётся locator_loader + url_manager + store_pages"""
-    return WebContext(page=page, store_pages=ProjectStorePages, url_manager=url_manager)
+    return WebContext(browser_page=browser_page, store_pages=NalogStorePages, url_manager=url_manager)
+
+
+@pytest.fixture(scope='function')
+def pages(web_context: WebContext):
+    """Точка входа в управление текущей страницей"""
+    return Pages(web_context)
 
 
 @pytest.fixture(scope='function')
