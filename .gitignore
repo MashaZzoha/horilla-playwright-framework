@@ -10,6 +10,12 @@ dist/
 .installed.cfg
 *.egg
 tmp/
+.env
+
+# --- Horilla CRM ---
+horilla-crm/
+!config/compose.yaml
+!config/.env.example
 
 # --- Виртуальное окружение ---
 venv/
