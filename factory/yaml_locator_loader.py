@@ -10,6 +10,7 @@ from utils.logger import get_logger
 logger = get_logger(__name__)
 
 SUPPORTED_TYPES = ("role", "label", "placeholder", "text", "alt", "title", "test_id", "css", "xpath", "frame")
+FILTER_KEYS = ('filter_text', 'filter_not_text')
 
 
 class YamlLocatorsLoader:
@@ -90,14 +91,18 @@ class YamlLocatorsLoader:
                     continue
                 locator_type, locator_value = result
             else:
-                locator_type = next(iter(value))
+                base_keys = [key for key in value if key not in FILTER_KEYS]
+                if not base_keys:
+                    warnings.append(f"Локатор '{name}': отсутствует базовый тип локатора (только filter_*)")
+                    continue
+                locator_type = base_keys[0]
                 if locator_type not in SUPPORTED_TYPES:
                     warnings.append(f"Локатор '{name}': неподдерживаемый тип '{locator_type}'.\n"
                                     f"Поддерживаемые типы: {SUPPORTED_TYPES}")
                     continue
 
                 locator_value = str(value[locator_type])
-            fingerprint = (locator_type, locator_value)
+            fingerprint = tuple(sorted((k, str(v)) for k, v in value.items()))
 
             if fingerprint in known_values:
                 warnings.append(
@@ -143,13 +148,21 @@ class YamlLocatorsLoader:
             "xpath": lambda c, loc: c.locator(f"xpath={_format(loc['xpath'])}"),
         }
 
+        base_locator = None
         for key, handler in get_locator_by.items():
             if key in locator_data:
-                return handler(container, locator_data)
+                base_locator = handler(container, locator_data)
+                break
+        if base_locator is None:
+            raise ValueError(
+                f"Неизвестный тип локатора: {locator_data}\n"
+                f"Поддерживаемые типы: {SUPPORTED_TYPES}")
 
-        raise ValueError(
-            f"Неизвестный тип локатора: {locator_data}\n"
-            f"Поддерживаемые типы: {SUPPORTED_TYPES}")
+        if 'filter_text' in locator_data:
+            base_locator = base_locator.filter(has_text=_format(locator_data['filter_text']))
+        if 'filter_not_text' in locator_data:
+            base_locator = base_locator.filter(has_not_text=_format(locator_data['filter_not_text']))
+        return base_locator
 
     @staticmethod
     def _validate_frame(name: str, value: dict, warnings: list):
@@ -167,7 +180,10 @@ class YamlLocatorsLoader:
         if not frame_data['inner']:
             warnings.append(f"Локатор '{name}': 'inner' не может быть пустым")
             return
-        inner_type = next(iter(frame_data['inner']))
+        inner_keys = [key for key in frame_data['inner'] if key not in FILTER_KEYS]
+        if not inner_keys:
+            warnings.append(f"Локатор '{name}': во frame нет базового типа (только filter_*)")
+        inner_type = inner_keys[0]
         if inner_type == 'frame':
             warnings.append(f"Локатор '{name}': вложенные frame не поддерживаются")
             return
