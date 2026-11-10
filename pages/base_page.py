@@ -58,7 +58,7 @@ class BasePage:
             attach_screenshot(self.browser_page, f"Не найден элемент: '{locator_name}'")
             raise
 
-    @step("Проверка отображения элемента '{}' на странице")
+    @step("Проверка отображения элемента {locator} на странице")
     def has_element(self, locator: str, timeout: int = None, **kwargs) -> bool:
         """
         Проверка наличия или отсутствия элемента на странице
@@ -158,7 +158,7 @@ class BasePage:
         """
         return self.get_element(locator, timeout=timeout, **kwargs).inner_text()
 
-    @step("Проверка отображения элемента '{locator}' на странице")
+    @step("Проверка отображения элемента {locator} на странице")
     def is_visible(self, locator: str, timeout: int = None, **kwargs) -> bool:
         """
         Проверка отображения элемента на экране
