@@ -36,3 +36,12 @@ class UnsupportedStorePages(Exception):
 class UnsupportedUrlManager(Exception):
     """Ошибка: неподдерживаемый URL-менеджер"""
     pass
+
+
+class UnknownDbException(Exception):
+    """Ошибка БД"""
+    pass
+
+
+class UnknownConfigException(Exception):
+    """Ошибка конфигурации"""
