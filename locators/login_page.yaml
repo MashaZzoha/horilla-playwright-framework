@@ -3,15 +3,20 @@
 Логотип Горилла:
   role: img
   name: Logo
+Блок авторизации:
+  text: Username Password Sign In
 Текст приветствия:
   role: heading
   name: Welcome to Horilla CRM
 Текст инструкции входа:
   text: Please sign in to access your dashboard
-  exact: true
+Лейбл Логин:
+  text: Username
 Поле ввода Логин:
   role: textbox
   name: Username
+Лейбл Пароль:
+  text: Password
 Поле ввода Пароль:
   role: textbox
   name: Password
