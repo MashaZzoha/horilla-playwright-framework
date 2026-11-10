@@ -8,11 +8,11 @@ from playwright.sync_api import Browser, BrowserContext
 from playwright.sync_api import Error as PlaywrightError
 from playwright.sync_api import Page, sync_playwright
 
-from config.settings import settings
+from config.settings import PROJECT_ROOT, settings
 from factory.pages import Pages
 from factory.url_manager import URLManager
 from factory.web_context import WebContext
-from pages.store import NalogStorePages
+from pages.store import HorillaStorePages
 from utils.allure_utils import build_environment_xml, copy_environment_to
 from utils.logger import get_logger
 
@@ -20,8 +20,8 @@ logger = get_logger(__name__)
 
 SUPPORTED_BROWSERS = ("chromium", "firefox", "webkit")
 
-VIDEO_DIR = Path("tmp/videos")
-TRACES_DIR = Path("tmp/traces")
+VIDEO_DIR = Path(PROJECT_ROOT) / "tmp" / "videos"
+TRACES_DIR = Path(PROJECT_ROOT) / "tmp" / "traces"
 
 
 def pytest_addoption(parser):
@@ -44,35 +44,22 @@ def _get_browser_from_env():
     return "chromium"
 
 
-# def pytest_configure(config):
-#     """
-#     Определить браузер по приоритету:
-#     1. --all-browsers → параметризация в pytest_generate_tests
-#     2. --browser → явный выбор
-#     3. BROWSER (env) → из переменной
-#     4. По умолчанию → chromium
-#     """
-#     shutil.rmtree(VIDEO_DIR, ignore_errors=True)
-#     VIDEO_DIR.mkdir(parents=True, exist_ok=True)
-#     shutil.rmtree(TRACES_DIR, ignore_errors=True)
-#     TRACES_DIR.mkdir(parents=True, exist_ok=True)
-#
-#     if config.getoption("--all-browsers"):
-#         return
-#     if getattr(config.option, 'browser', None):
-#         return
-#     config.option.browser = _get_browser_from_env()
+def pytest_configure(config):
+    shutil.rmtree(VIDEO_DIR, ignore_errors=True)
+    VIDEO_DIR.mkdir(parents=True, exist_ok=True)
+    shutil.rmtree(TRACES_DIR, ignore_errors=True)
+    TRACES_DIR.mkdir(parents=True, exist_ok=True)
+
+    if getattr(config.option, 'browser', None):
+        return
+    config.option.browser = [_get_browser_from_env()]
 
 
-# def pytest_generate_tests(metafunc):
-#     """--all-browsers - параметризация browser_name"""
-#     if 'browser_name' not in metafunc.fixturenames:
-#         return
-#     if metafunc.config.getoption('--all-browsers'):
-#         metafunc.parametrize('browser_name', list(SUPPORTED_BROWSERS))
-#     else:
-#         browser = getattr(metafunc.config.option, 'browser', None) or _get_browser_from_env()
-#         metafunc.parametrize('browser_name', [browser])
+def pytest_generate_tests(metafunc):
+    if 'browser_name' not in metafunc.fixturenames:
+        return
+    if metafunc.config.getoption('--all-browsers'):
+        metafunc.parametrize('browser_name', list(SUPPORTED_BROWSERS))
 
 
 def pytest_make_parametrize_id(config, val):
@@ -98,7 +85,7 @@ def browser(playwright_instance, browser_name: str):
     if browser_name not in SUPPORTED_BROWSERS:
         raise ValueError(f"Неподдерживаемый браузер '{browser_name}'. Допустимые: {SUPPORTED_BROWSERS}")
 
-    launch_args = []
+    launch_args = ["--disable-blink-features=AutomationControlled"]
     if not settings.headless and browser_name == 'chromium':
         launch_args.append('--start-maximized')
 
@@ -114,7 +101,7 @@ def browser(playwright_instance, browser_name: str):
 def browser_context(browser: Browser, request):
     """Новый контекст для каждого теста: viewport + видео + трассировка"""
     ctx = browser.new_context(
-        viewport={"width": 1920, "height": 1080},
+        no_viewport=True,
         record_video_dir=str(VIDEO_DIR),
         record_video_size={"width": 1280, "height": 720},
     )
@@ -197,17 +184,17 @@ def pytest_runtest_makereport(item, call):
         logger.warning(f"Не удалось сделать скриншот '{item.name}': {e}")
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope='session')
 def allure_env(tmpdir_factory):
     """Путь до environment.xml"""
     return tmpdir_factory.mktemp('allure').join('environment.xml').strpath
 
 
-@pytest.fixture(scope='function')
+@pytest.fixture(scope='session')
 def write_allure_env(request, allure_env):
     """Заполняет environment.xml и копирует в alluredir после тестов"""
     build_environment_xml(allure_env, {
-        "Browser": getattr(settings, "browser", "chromium"),
+        "Browser": getattr(request.config.option, "browser", "chromium"),
         "Headless": getattr(settings, "headless", True),
         "Environment": getattr(settings, "env", "local"),
         "Base URL": getattr(settings, "base_url", "n/a")
@@ -226,7 +213,7 @@ def url_manager() -> URLManager:
     """URL-менеджер с зарегистрированными адресами"""
     manager = URLManager(base_url=settings.base_url)
     manager.registry_urls([
-        {"Главная страница": {"path": "/"}},
+        {"Страница авторизации": {"path": "/login/"}},
     ])
     return manager
 
@@ -234,7 +221,7 @@ def url_manager() -> URLManager:
 @pytest.fixture(scope='function')
 def web_context(browser_page: Page, url_manager: URLManager) -> WebContext:
     """Вэб-контекст: page + создаётся locator_loader + url_manager + store_pages"""
-    return WebContext(browser_page=browser_page, store_pages=NalogStorePages, url_manager=url_manager)
+    return WebContext(browser_page=browser_page, store_pages=HorillaStorePages, url_manager=url_manager)
 
 
 @pytest.fixture(scope='function')
