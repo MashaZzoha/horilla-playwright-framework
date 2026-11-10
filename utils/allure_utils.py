@@ -6,8 +6,8 @@ from functools import wraps
 from typing import Union
 
 import allure
-from allure_commons._allure import StepContext
 from allure_commons import plugin_manager
+from allure_commons._allure import StepContext
 from allure_commons.types import AttachmentType
 from allure_commons.utils import func_parameters, represent
 from lxml import etree
@@ -45,7 +45,7 @@ def attach_json(data: dict, name: str = 'JSON'):
 
 def step(title):
     """Шаг Allure: работает и как декоратор, и как контекст-менеджер.
-    Декоратор: подставляет аргументы функции в {placeholders};
+    Декоратор: подставляет аргументы функции в {placeholders}.
     Контекст: логирует начало/конец шага.
     """
     if callable(title):
