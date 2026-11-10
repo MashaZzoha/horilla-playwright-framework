@@ -10,13 +10,6 @@ db:
   horilla:
     host: "localhost"
     port: 5432
-    name: "horilla_db"
+    dbname: "horilla_db"
     user: "horilla_user"
     password: "horilla_pass"
-
-docker:
-  db_password: change-me-db-password
-  redis_password: change-me-redis-password
-  secret_key: "^%%npegwrk%wacxlt@enj4z$w$0y1)b75uay_r&3f0@l%bzg0i"
-  db_name: horilla_db
-  db_user: horilla_user
