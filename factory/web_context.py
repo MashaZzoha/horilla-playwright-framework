@@ -16,9 +16,9 @@ logger = get_logger(__name__)
 class WebContext:
     """Класс web-контекст. Реализует контекст для работы с браузером."""
 
-    def __init__(self, page: Page, store_pages: Type[BasePagesStore], url_manager: URLManager):
-        self.page = page
-        self.yaml_locator_loader = YamlLocatorsLoader(self.page, PROJECT_ROOT, 'locators')
+    def __init__(self, browser_page: Page, store_pages: Type[BasePagesStore], url_manager: URLManager):
+        self.browser_page = browser_page
+        self.yaml_locator_loader = YamlLocatorsLoader(self.browser_page, PROJECT_ROOT, 'locators')
         self._store_pages = None
         self._url_manager = None
         if store_pages:
@@ -50,7 +50,7 @@ class WebContext:
         """
         url = self.url_manager.get(url_name, **kwargs)
         with step(f"Открыть по URL страницу: {url_name} - {url}"):
-            self.page.goto(url)
+            self.browser_page.goto(url)
         return self
 
     def set_store_pages(self, store_pages):
@@ -67,53 +67,52 @@ class WebContext:
         Установить новый URL-менеджер для контекста
         :param url_manager: URL-менеджер
         """
-        if not issubclass(url_manager, URLManager):
+        if not isinstance(url_manager, URLManager):
             raise UnsupportedUrlManager(f"Неподдерживаемый URL-менеджер: {url_manager}")
         self._url_manager = url_manager
 
-    def get_page(self, page_name, check=True):
+    def get_page(self, page_name: str):
         """
         Получить объект страницы по названию
-        :param check: выполнять проверку ключевых элементов на странице
         :param page_name: название страницы
         :return: объект страницы
         """
-        return self.store_pages(page_name, check).current_page
+        return self.store_pages(page_name).current_page
 
     def open_new_tab(self) -> Page:
         """Открыть и перейти на новую вкладку"""
-        new_page = self.page.context.new_page()
-        self.page = new_page
+        new_page = self.browser_page.context.new_page()
+        self.browser_page = new_page
         self.yaml_locator_loader.page = new_page
         logger.info("Открыта новая вкладка")
         return new_page
 
     def close_tab(self):
         """Закрыть текущую вкладку и переключиться на оставшуюся"""
-        current = self.page
+        current = self.browser_page
         ctx = current.context
         current.close()
         logger.info("Вкладка закрыта")
         remaining = ctx.pages
         if not remaining:
             raise RuntimeError("Все вкладки закрыты")
-        self.page = remaining[-1]
-        self.yaml_locator_loader.page = self.page
-        logger.info(f"Переключено на вкладку: {self.page.url}")
+        self.browser_page = remaining[-1]
+        self.yaml_locator_loader.page = self.browser_page
+        logger.info(f"Переключено на вкладку: {self.browser_page.url}")
         return self
 
     def switch_to_tab(self, index: int) -> Page:
         """Переключиться на вкладку по индексу self.page — выбранная вкладка"""
-        pages = self.page.context.pages
+        pages = self.browser_page.context.pages
         if index >= len(pages):
             raise IndexError(f"Вкладки с индексом {index} нет. Общее число вкладок: {len(pages)}")
-        self.page = pages[index]
+        self.browser_page = pages[index]
         logger.info(f"Переключено на вкладку {index}")
-        return self.page
+        return self.browser_page
 
     def close_all_tabs(self):
         """Закрыть все вкладки"""
-        ctx = self.page.context
+        ctx = self.browser_page.context
         for page in ctx.pages:
             page.close()
         logger.info("Все вкладки закрыты")
@@ -121,5 +120,5 @@ class WebContext:
 
     def screenshot(self, name: str = 'screenshot'):
         """Делает и прикрепляет скриншот в Allure."""
-        attach_screenshot(self.page, name)
+        attach_screenshot(self.browser_page, name)
         return self
