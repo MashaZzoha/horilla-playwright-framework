@@ -17,11 +17,13 @@ class PostgreSQLProvider:
 
     @property
     def get_cursor(self):
+        """Вернуть активный курсор (создаёт соединение, если его нет)"""
         if not self.cursor or self.cursor.closed:
             self.connect()
         return self.cursor
 
     def connect(self):
+        """Установить соединение с PostgreSQL и создать курсор"""
         if self.conn:
             self.close()
         self.conn = psycopg2.connect(self.connection_str)
@@ -31,6 +33,7 @@ class PostgreSQLProvider:
         return self
 
     def close(self):
+        """Закрыть курсор и соединение с PostgreSQL"""
         try:
             if self.cursor:
                 self.cursor.close()
@@ -48,13 +51,19 @@ class PostgreSQLProvider:
         logger.debug("Соединение с PostgreSQL остановлено")
 
     def _row_to_dict_list(self):
+        """Преобразовать текущий результат курсора в список словарей (ключи — имена колонок)"""
         if not self.get_cursor.description:
             return []
         columns = [i[0].upper() for i in self.get_cursor.description]
         return [dict(zip(columns, row)) for row in self.get_cursor]
 
     def execute(self, query: str, params: tuple = None):
-        """Выполнить SQL и вернуть список словарей (результат SELECT)"""
+        """
+        Выполнить SQL и вернуть список словарей (результат SELECT)
+        :param query: SQL-запрос
+        :param params: параметры запроса (для передачи значений в запрос)
+        :return: строки результата в формате списка словарей
+        """
         logger.debug(f"SQL: {query} | params: {params}")
         self.get_cursor.execute(query, params)
         result = self._row_to_dict_list()
@@ -62,7 +71,7 @@ class PostgreSQLProvider:
         return result
 
     def fetch_one(self):
-        """Вернуть одну строку или {}"""
+        """Вернуть одну строку результата или {} если БД не вернула результат"""
         row = self.get_cursor.fetchone()
         if row and self.get_cursor.description:
             columns = [i[0].upper() for i in self.get_cursor.description]
@@ -70,7 +79,11 @@ class PostgreSQLProvider:
         return {}
 
     def fetch_many(self, limit: int = 1000):
-        """Вернуть количество строк до указанного ограничения (limit)"""
+        """
+        Вернуть количество строк до указанного ограничения (limit)
+        :param limit: максимальное количество строк
+        :return: строки результата в формате списка словарей
+        """
         rows = self.get_cursor.fetchmany()
         if rows and self.get_cursor.description:
             columns = [i[0].upper() for i in self.get_cursor.description]
@@ -83,7 +96,9 @@ class PostgreSQLProvider:
         logger.debug("Transaction committed")
 
     def __enter__(self):
+        """Контекстный менеджер: вход (возвращает провайдер)"""
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        """Контекстный менеджер: выход (закрывает соединение)"""
         return self
