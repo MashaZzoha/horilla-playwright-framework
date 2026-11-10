@@ -1,5 +1,6 @@
+from functools import partial, wraps
+
 import psycopg2
-from functools import wraps
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 
 from utils.allure_utils import attach
@@ -31,6 +32,26 @@ class PostgreSQLProvider:
         logger.debug(f"Connection string: {self.connection_str}")
         self.conn = None
         self.cursor = None
+        self.query_storage = None
+
+    def __getattr__(self, item):
+        """Передаёт методы хранилища запросов (HorillaQueries)"""
+        if item.startswith('_'):
+            raise AttributeError(item)
+        if self.query_storage:
+            query_method = getattr(self.query_storage, item, None)
+            if query_method:
+                return partial(self._make_execute, query_method)
+            raise AttributeError(f"Не найден метод запроса '{item}' в хранилище {self.query_storage}")
+        raise TypeError("Не определено хранилище запросов. Установите provider.query_storage (HorillaQueries)")
+
+    def _make_execute(self, query, *args, **kwargs):
+        """Собрать SQL из метода хранилища и выполнить через execute"""
+        params = kwargs.pop('params', None)
+        q = query(*args, **kwargs)
+        if isinstance(q, tuple):
+            return self.execute(*q, params=params)
+        return self.execute(q, params=params)
 
     @property
     def get_cursor(self):
