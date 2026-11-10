@@ -16,8 +16,6 @@ class Checker:
         """
         self.ctx = web_context
 
-    # TODO Ничего полезного для нас этот метод не обрабатывает - проверка логики
-
     @step("Проверить {logentry}")
     def check_user_exists(self, logentry: str, timeout: int = 10, interval: int = 2):
         """
@@ -26,6 +24,7 @@ class Checker:
         :param timeout: максимальное время ожидания ответа от БД
         :param interval: интервал между повторными запросами
         """
+        # TODO Нужно заменить полезным методом. Сейчас этот метод для проверки логики
         response = []
         start_time = time()
         while time() - start_time < timeout:
