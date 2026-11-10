@@ -12,7 +12,7 @@ db:
     port: 5432
     name: "horilla_db"
     user: "horilla_user"
-    password: "change-me-db-password"
+    password: "horilla_pass"
 
 docker:
   db_password: change-me-db-password
