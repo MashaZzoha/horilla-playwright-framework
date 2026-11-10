@@ -1,16 +1,38 @@
+from time import sleep
 from typing import Type
 
 from playwright.sync_api import Page
 
-from config.settings import PROJECT_ROOT
+from config.settings import PROJECT_ROOT, settings
 from factory.base_pages_store import BasePagesStore
+from factory.queries.horilla_db import HorillaQueries
 from factory.url_manager import URLManager
 from factory.yaml_locator_loader import YamlLocatorsLoader
 from utils.allure_utils import attach_screenshot, step
-from utils.exceptions import UnsupportedStorePages, UnsupportedUrlManager
+from utils.exceptions import (UnknownConfigException, UnknownDbException,
+                              UnsupportedStorePages, UnsupportedUrlManager)
 from utils.logger import get_logger
+from utils.postgresql_provider import PostgreSQLProvider
 
 logger = get_logger(__name__)
+
+
+def retry(func):
+    """Повторный вызов метода при ошибках подключения к БД (3 попытки)"""
+
+    def decorator(*args, **kwargs):
+        attempts = 3
+        delay = 5
+        while attempts > 0:
+            attempts -= 1
+            try:
+                return func(*args, **kwargs)
+            except UnknownDbException as e:
+                if attempts == 0:
+                    raise e
+                sleep(delay)
+
+    return decorator
 
 
 class WebContext:
@@ -25,6 +47,7 @@ class WebContext:
             self.set_store_pages(store_pages)
         if url_manager:
             self.set_url_manager(url_manager)
+        self._db_registry = {}
 
     @property
     def store_pages(self):
@@ -41,6 +64,12 @@ class WebContext:
         :return: URL-менеджер
         """
         return self._url_manager
+
+    @property
+    def horilla_provider(self):
+        """Провайдер для работы с БД PostgreSQL horilla_db"""
+        return self.get_db_provider(
+            'db', db_name='horilla', provider=PostgreSQLProvider, query_storage=HorillaQueries)
 
     def goto(self, url_name: str, **kwargs):
         """
@@ -122,3 +151,45 @@ class WebContext:
         """Делает и прикрепляет скриншот в Allure."""
         attach_screenshot(self.browser_page, name)
         return self
+
+    @staticmethod
+    def _get_item_from_config(*path, name):
+        """
+        Получить объект из конфига (settings)
+        :param path: путь до объекта (например, "db")
+        :param name: ключ объекта (например, "horilla")
+        :return: объект конфига (словарь)
+        """
+        env = settings
+        item = None
+        for item in path:
+            env = getattr(env, item, None) if hasattr(env, item) else env.get(item) if isinstance(env, dict) else None
+        if not env:
+            raise UnknownConfigException(f"Не найден конфиг: {item}")
+        return env.get(name) if isinstance(env, dict) else getattr(env, name, None)
+
+    @retry
+    def get_db_provider(self, *path, db_name: str, provider, query_storage=None, **kwargs):
+        """
+        Получить провайдер БД по имени (кэшируется)
+        :param path: путь до БД в конфиге (например, "db")
+        :param db_name: имя БД
+        :param provider: класс провайдера
+        :param query_storage: класс запросов в БД
+        :param kwargs: параметры подключения
+        :return: объект провайдера
+        """
+        if db_name not in self._db_registry:
+            env = self._get_item_from_config(*path, name=db_name)
+            if not env:
+                raise UnknownDbException(f"Не найден конфиг БД: {db_name}")
+            self._db_registry[db_name] = provider(**dict(env)).connect()
+            if query_storage:
+                self._db_registry[db_name].query_storage = query_storage
+        return self._db_registry[db_name]
+
+    def close_db(self):
+        """Закрыть все соединения с БД"""
+        for provider in self._db_registry.values():
+            provider.close()
+        self._db_registry.clear()
