@@ -27,7 +27,7 @@ class URLManager:
         """
         url_title = url_title.upper()
         if not url and path:
-            url = f"{self.base_url}{path.lstrip('/')}" if path else self.base_url
+            url = f"{self.base_url.rstrip('/')}/{path.lstrip('/')}" if path else self.base_url
         if not url:
             self._add_error(f"Невозможно добавить URL с именем <{url_title}>: "
                             f"отсутствуют обязательные параметры url или path")
