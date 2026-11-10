@@ -23,11 +23,12 @@ class Pages:
         self._current_page = self.context.get_page(page_name)
         return self._current_page
 
-    def open_page(self, page_name: str, url_name: str = None, **kwargs):
-        """Открыть страницу. Возвращает Page Object."""
-        target_url = url_name or page_name
+    def open_page(self, page_name: str, **kwargs):
+        self.context.goto(page_name, **kwargs)
+        self.context.browser_page.locator(
+            ".htmx-request, .htmx-settling, .htmx-swapping"
+        ).wait_for(state="detached", timeout=15000)
         page = self.page(page_name)
-        self.context.goto(target_url, **kwargs)
         return page
 
     def __getattr__(self, name):
