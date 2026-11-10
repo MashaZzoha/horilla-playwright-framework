@@ -1,0 +1,20 @@
+Форма авторизации:
+  css: div#sec1
+Логотип Горилла:
+  role: img
+  name: Logo
+Текст приветствия:
+  role: heading
+  name: Welcome to Horilla CRM
+Текст инструкции входа:
+  text: Please sign in to access your dashboard
+  exact: true
+Поле ввода Логин:
+  role: textbox
+  name: Username
+Поле ввода Пароль:
+  role: textbox
+  name: Password
+Кнопка Войти:
+  role: button
+  name: Arrow Sign In
