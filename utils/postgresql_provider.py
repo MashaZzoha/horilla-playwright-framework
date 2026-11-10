@@ -105,7 +105,7 @@ class PostgreSQLProvider:
         logger.debug(f"SQL: {query} | params: {params}")
         self.get_cursor.execute(query, params)
         result = self._row_to_dict_list()
-        logger.debug(f"Количество записей от БД: {result}")
+        logger.debug(f"Количество записей от БД: {len(result)}")
         return result
 
     def fetch_one(self):
