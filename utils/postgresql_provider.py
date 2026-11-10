@@ -1,9 +1,26 @@
 import psycopg2
+from functools import wraps
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 
+from utils.allure_utils import attach
 from utils.logger import get_logger
 
 logger = get_logger(__name__)
+
+
+def attach_source_query(func):
+    """
+    Декоратор для методов HorillaQueries
+    Добавляет в Allure attach с SQL-запросом
+    """
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        query = func(*args, **kwargs)
+        attach('Текст запроса к БД', body=query)
+        return query
+
+    return wrapper
 
 
 class PostgreSQLProvider:
@@ -84,7 +101,7 @@ class PostgreSQLProvider:
         :param limit: максимальное количество строк
         :return: строки результата в формате списка словарей
         """
-        rows = self.get_cursor.fetchmany()
+        rows = self.get_cursor.fetchmany(limit)
         if rows and self.get_cursor.description:
             columns = [i[0].upper() for i in self.get_cursor.description]
             return [dict(zip(columns, row)) for row in rows]
