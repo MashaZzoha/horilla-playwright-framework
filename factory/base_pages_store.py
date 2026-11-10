@@ -1,6 +1,5 @@
 from typing import Dict, List, Type
 
-from factory.web_context import WebContext
 from pages.base_page import BasePage
 from utils.exceptions import NotFoundPageInStore
 from utils.logger import get_logger
@@ -12,14 +11,19 @@ class BasePagesStore:
     """Базовый класс каталога страниц.
     Реализует поиск в каталоге страниц по названию страницы"""
 
-    def __init__(self, context: WebContext, store="Магазин страниц"):
+    def __init__(self, context, store="Магазин страниц"):
+        """
+
+        :param context: WebContext
+        :param store:
+        """
         self.context = context
         self._store = store
         self._registry: Dict[str, Type[BasePage]] = {}
         self._pages: Dict[str, BasePage] = {}
         self._current_page = None
 
-    def __call__(self, page_name: str, check: bool = True):
+    def __call__(self, page_name: str):
         page_name = page_name.upper()
         try:
             page_class = self._registry[page_name]
