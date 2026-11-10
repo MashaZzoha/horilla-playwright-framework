@@ -48,6 +48,7 @@ class WebContext:
         if url_manager:
             self.set_url_manager(url_manager)
         self._db_registry = {}
+        self._check = None
 
     @property
     def store_pages(self):
@@ -70,6 +71,14 @@ class WebContext:
         """Провайдер для работы с БД PostgreSQL horilla_db"""
         return self.get_db_provider(
             'db', db_name='horilla', provider=PostgreSQLProvider, query_storage=HorillaQueries)
+
+    @property
+    def check(self):
+        """Класс проверок ответов от БД и сервисов"""
+        if self._check is None:
+            from checker.checker import Checker
+            self._check = Checker(self)
+        return self._check
 
     def goto(self, url_name: str, **kwargs):
         """
