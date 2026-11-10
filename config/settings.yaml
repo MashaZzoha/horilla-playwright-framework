@@ -2,6 +2,18 @@ base_url: http://localhost:8000
 timeout: 10000
 headless: false
 
+admin:
+    username: "zin-admin"
+    password: "admin123"
+
+db:
+  horilla:
+    host: "localhost"
+    port: 5432
+    name: "horilla_db"
+    user: "horilla_user"
+    password: "change-me-db-password"
+
 docker:
   db_password: change-me-db-password
   redis_password: change-me-redis-password
