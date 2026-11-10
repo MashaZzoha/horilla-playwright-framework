@@ -23,9 +23,9 @@ logger = get_logger(__name__)
 def attach(name: str, body: Union[str, bytes] = '', attachment_type=AttachmentType.TEXT):
     """Прикрепляет и логирует вложения к Allure-отчёту."""
     if attachment_type != AttachmentType.TEXT:
-        logger.debug(f"Allure attachment: {name} -> {attachment_type}")
+        logger.info(f"Allure attachment:\n\t{name}\n -> {attachment_type}\n")
     else:
-        logger.debug(f"Allure attachment: {name}: {body}")
+        logger.info(f"Allure attachment:\n\t{name}:\n{body}\n")
     allure.attach(name=name, body=body, attachment_type=attachment_type)
 
 
