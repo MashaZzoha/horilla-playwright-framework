@@ -140,7 +140,7 @@ class YamlLocatorsLoader:
             "role": lambda c, loc: c.get_by_role(loc["role"], name=loc.get("name")),
             "label": lambda c, loc: c.get_by_label(loc["label"]),
             "placeholder": lambda c, loc: c.get_by_placeholder(loc["placeholder"]),
-            "text": lambda c, loc: c.get_by_text(loc["text"], exact=loc.get("exact", False)),
+            "text": lambda c, loc: c.get_by_text(loc["text"], exact=loc.get("exact", True)),
             "alt": lambda c, loc: c.get_by_alt_text(loc["alt"]),
             "title": lambda c, loc: c.get_by_title(loc["title"]),
             "test_id": lambda c, loc: c.get_by_test_id(_format(loc["test_id"])),
