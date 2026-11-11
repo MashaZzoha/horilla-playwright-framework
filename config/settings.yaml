@@ -2,9 +2,10 @@ base_url: http://localhost:8000
 timeout: 10000
 headless: false
 
-admin:
-    username: "zin-admin"
-    password: "admin123"
+users:
+  admin:
+      username: "zin-admin"
+      password: "Admin@123"
 
 db:
   horilla:
@@ -13,3 +14,5 @@ db:
     dbname: "horilla_db"
     user: "horilla_user"
     password: "horilla_pass"
+
+
