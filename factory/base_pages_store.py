@@ -14,7 +14,7 @@ class BasePagesStore:
     def __init__(self, context, store="Магазин страниц"):
         """
 
-        :param context: WebContext
+        :param context: Context
         :param store:
         """
         self.context = context
