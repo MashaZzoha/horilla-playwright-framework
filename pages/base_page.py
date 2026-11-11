@@ -1,7 +1,8 @@
 from playwright.sync_api import Locator
 from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
+from playwright.sync_api import expect
 
-from utils.allure_utils import attach_screenshot, step
+from utils.allure_utils import attach, attach_screenshot, step
 from utils.exceptions import ElementsNotFound, LocatorNotFound
 from utils.logger import get_logger
 
@@ -11,10 +12,9 @@ logger = get_logger(__name__)
 class BasePage:
     """Базовый класс страниц проекта"""
 
-    def __init__(self, context, page_name: str, page_file_name: str = None):
+    def __init__(self, context, page_name: str, page_file_name: str = 'base_page_yaml'):
         """
-
-        :param context: WebContext
+        :param context: Context
         :param page_name: название страницы из каталога страниц
         :param page_file_name: название .yaml-файла страницы
         """
@@ -25,6 +25,7 @@ class BasePage:
         self.page_file_name = page_file_name
         self.page_name = page_name
         self._elements_to_check = []
+        self.yaml_locator_loader.locator_registry(self.page_file_name)
 
     @staticmethod
     def time_sec(timeout: int = None):
@@ -39,7 +40,7 @@ class BasePage:
         """
         return self.yaml_locator_loader.get_locator_by_name(self.page_file_name, locator, **kwargs)
 
-    def get_element(self, locator_name: str, timeout: int = None, **kwargs) -> Locator:
+    def get_element(self, locator_name: str, timeout: int = 10000, **kwargs) -> Locator:
         """
         Поиск элемента, ожидание его отображения на странице
         :param locator_name: YAML-локатор
@@ -71,6 +72,72 @@ class BasePage:
             return True
         except PlaywrightTimeoutError:
             return False
+
+    @step('Проверить наличие атрибута {attribute} со значением {value} у элемента {locator}')
+    def expect_attribute(self, locator: str, attribute: str, value, timeout: int = None, **kwargs):
+        """
+        Проверяет у элемента наличие атрибута с определённым значением
+        :param locator: YAML-локатор
+        :param attribute: атрибут
+        :param value: значение атрибута
+        :param timeout: время ожидания
+        :param kwargs: значение для динамического локатора
+        """
+        expect(self._get(locator, **kwargs)).to_have_attribute(attribute, value, timeout)
+        return self
+
+    @step("Проверить наличие видимого текста '{text}' в элементе '{locator}'")
+    def expect_text(
+            self,
+            locator: str,
+            text: str,
+            exact: bool = True,
+            timeout: int = 5000,
+            **kwargs):
+        """
+        Проверяет, что элемент или поле ввода содержит видимый текст
+        :param locator: имя локатора
+        :param text: ожидаемый текст
+        :param exact: True — точное совпадение, False — подстрока
+        :param timeout: время ожидания
+        :param kwargs: параметры динамического локатора
+        """
+        element = self._get(locator, **kwargs)
+        if exact:
+            expect(element).to_have_text(text, timeout=timeout)
+        else:
+            expect(element).to_contain_text(text, timeout=timeout)
+        return self
+
+    @step("Проверить отсутствие видимого текста '{text}' в элементе '{locator}'")
+    def expect_not_text(
+            self,
+            locator: str,
+            text: str,
+            exact: bool = True,
+            timeout: int = 5000,
+            **kwargs):
+        """
+        Проверяет, что элемент или поле ввода НЕ содержит видимый текст
+        :param locator: имя локатора
+        :param text: ожидаемый текст
+        :param exact: True — точное совпадение, False — подстрока
+        :param timeout: время ожидания
+        :param kwargs: параметры динамического локатора
+        """
+        element = self._get(locator, **kwargs)
+        element.wait_for(state="visible", timeout=timeout)
+        tag = element.evaluate("el => el.tagName.toLowerCase()")
+        if tag in ("input", "textarea"):
+            actual_text = element.input_value()
+        else:
+            actual_text = element.inner_text()
+        attach('Фактический тест элемента', actual_text)
+        if exact:
+            assert actual_text != text, f"Видимый текст элемента '{locator}' соответствует '{text}'"
+        else:
+            assert text not in actual_text, f"Видимый текст '{locator}' содержит '{text}'"
+        return self
 
     @step("Добавить элементы для проверки на странице: {elements}")
     def add_elements_to_check(self, *elements):
@@ -109,7 +176,7 @@ class BasePage:
                         elements_not_found.append(element)
                 if elements_not_found:
                     msg = (f"Элементы: {', '.join(elements_not_found).upper()} не найдены.\n"
-                           f"Возможно не открылась страница {self.page_name.upper()}")
+                           f"Возможно не открылась {self.page_name.upper()}")
                     logger.error(msg)
                     raise ElementsNotFound(msg)
         return self
@@ -137,7 +204,7 @@ class BasePage:
         return self
 
     @step("Ввести текст '{text}' в поле ввода '{locator}'")
-    def input(self, locator: str, text, timeout: int = None, **kwargs):
+    def input_text(self, locator: str, text, timeout: int = None, **kwargs):
         """
         Вводит текст в поле ввода
         :param locator: YAML-локатор
@@ -147,6 +214,36 @@ class BasePage:
         """
         self.get_element(locator, timeout=timeout, **kwargs).fill(str(text))
         return self
+
+    @step("")
+    def input_verified(self, locator: str, text: str, retries: int = 3, delay: int = 150,
+                       timeout: int = None, **kwargs):
+        """Вводит значение в поле и проверяет, что оно 'закрепилось' (HTMX может перерисовать DOM)
+        :param locator: имя локатора
+        :param text: значение
+        :param retries: число попыток
+        :param delay: пауза после ввода перед проверкой (мс)
+        :param timeout: таймаут ожидания элемента
+        :param kwargs: параметры динамического локатора
+        """
+        attempts = 0
+        text = str(text)
+
+        while attempts < retries:
+            mismatched = []
+            self.input_text(locator, text, timeout=timeout, **kwargs)
+            self.browser_page.wait_for_timeout(delay)
+            element = self.get_element(locator, timeout=timeout, **kwargs)
+            if element.input_value() != text:
+                mismatched.append(locator)
+            if not mismatched:
+                return self
+            attempts += 1
+            logger.debug(
+                f"[{self.page_name}] Не закрепилось поле: {mismatched} на попытке {attempts}")
+
+        raise AssertionError(
+            f"Не удалось зафиксировать значение '{text}' в поле '{locator}' за {attempts} попыток")
 
     @step("Получить текст из элемента '{locator}'")
     def get_text(self, locator: str, timeout: int = None, **kwargs) -> str:
@@ -199,7 +296,6 @@ class BasePage:
         :param delay: задержка между вводом символов
         :param timeout: время ожидания
         :param kwargs: значение для динамического локатора
-
         """
         self.get_element(locator, timeout=timeout, **kwargs).press_sequentially(text, delay=delay)
         return self
