@@ -89,6 +89,8 @@ class WebContext:
         url = self.url_manager.get(url_name, **kwargs)
         with step(f"Открыть по URL страницу: {url_name} - {url}"):
             self.browser_page.goto(url)
+            self.browser_page.locator(".htmx-request, .htmx-settling, .htmx-swapping"
+                                      ).wait_for(state="detached", timeout=5000)
         return self
 
     def set_store_pages(self, store_pages):
