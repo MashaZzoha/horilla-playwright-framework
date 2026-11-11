@@ -9,9 +9,9 @@ from playwright.sync_api import Error as PlaywrightError
 from playwright.sync_api import Page, sync_playwright
 
 from config.settings import PROJECT_ROOT, settings
+from factory.context import Context
 from factory.pages import Pages
 from factory.url_manager import URLManager
-from factory.web_context import WebContext
 from pages.store import HorillaStorePages
 from utils.allure_utils import build_environment_xml, copy_environment_to
 from utils.logger import get_logger
@@ -90,7 +90,7 @@ def browser(playwright_instance, browser_name: str):
         launch_args.append('--start-maximized')
 
     browser_type = getattr(playwright_instance, browser_name)
-    browser = browser_type.launch(headless=settings.headless, args=launch_args)
+    browser = browser_type.launch(channel="chrome", headless=settings.headless, args=launch_args)
     try:
         yield browser
     finally:
@@ -103,8 +103,9 @@ def browser_context(browser: Browser, request):
     ctx = browser.new_context(
         no_viewport=True,
         record_video_dir=str(VIDEO_DIR),
-        record_video_size={"width": 1280, "height": 720},
-    )
+        record_video_size={"width": 1280, "height": 720})
+    ctx.set_default_timeout(5000)  # 5 сек для всех действий
+    ctx.set_default_navigation_timeout(5000)  # 10 сек для goto/reload
     ctx.tracing.start(screenshots=True, snapshots=True, sources=True)
     try:
         yield ctx
@@ -205,7 +206,7 @@ def write_allure_env(request, allure_env):
     allure_dir = request.config.getoption("--alluredir", default="", skip=True)
     copy_environment_to(allure_dir, allure_env)
 
-# ------------------------------ URL / WebContext ---------------------------------------------------------------------
+# ------------------------------ URL / Context ---------------------------------------------------------------------
 
 
 @pytest.fixture(scope="function")
@@ -219,18 +220,18 @@ def url_manager() -> URLManager:
 
 
 @pytest.fixture(scope='function')
-def web_context(browser_page: Page, url_manager: URLManager) -> WebContext:
+def context(browser_page: Page, url_manager: URLManager) -> Context:
     """Вэб-контекст: page + создаётся locator_loader + url_manager + store_pages"""
-    return WebContext(browser_page=browser_page, store_pages=HorillaStorePages, url_manager=url_manager)
+    return Context(browser_page=browser_page, store_pages=HorillaStorePages, url_manager=url_manager)
 
 
 @pytest.fixture(scope='function')
-def pages(web_context: WebContext):
+def pages(context: Context):
     """Точка входа в управление текущей страницей"""
-    return Pages(web_context)
+    return Pages(context)
 
 
 @pytest.fixture(scope='function')
-def store_pages(web_context: WebContext):
-    """Экземпляр каталога страниц, созданный внутри WebContext."""
-    return web_context.store_pages
+def store_pages(context: Context):
+    """Экземпляр каталога страниц, созданный внутри Context."""
+    return context.store_pages
