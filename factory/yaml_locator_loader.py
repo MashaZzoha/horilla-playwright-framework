@@ -91,7 +91,7 @@ class YamlLocatorsLoader:
                     continue
                 locator_type, locator_value = result
             else:
-                base_keys = [key for key in value if key not in FILTER_KEYS]
+                base_keys = [key for key in value if key in SUPPORTED_TYPES]
                 if not base_keys:
                     warnings.append(f"Локатор '{name}': отсутствует базовый тип локатора (только filter_*)")
                     continue
@@ -137,10 +137,12 @@ class YamlLocatorsLoader:
                 )
 
         get_locator_by = {
-            "role": lambda c, loc: c.get_by_role(loc["role"], name=loc.get("name")),
+            "role": lambda c, loc: c.get_by_role(loc["role"],
+                                                 name=_format(loc["name"]) if loc.get("name") else None,
+                                                 exact=loc.get("exact", True)),
             "label": lambda c, loc: c.get_by_label(loc["label"]),
             "placeholder": lambda c, loc: c.get_by_placeholder(loc["placeholder"]),
-            "text": lambda c, loc: c.get_by_text(loc["text"], exact=loc.get("exact", True)),
+            "text": lambda c, loc: c.get_by_text(_format(loc["text"]), exact=loc.get("exact", True)),
             "alt": lambda c, loc: c.get_by_alt_text(loc["alt"]),
             "title": lambda c, loc: c.get_by_title(loc["title"]),
             "test_id": lambda c, loc: c.get_by_test_id(_format(loc["test_id"])),
@@ -148,15 +150,13 @@ class YamlLocatorsLoader:
             "xpath": lambda c, loc: c.locator(f"xpath={_format(loc['xpath'])}"),
         }
 
-        base_locator = None
-        for key, handler in get_locator_by.items():
-            if key in locator_data:
-                base_locator = handler(container, locator_data)
-                break
-        if base_locator is None:
-            raise ValueError(
-                f"Неизвестный тип локатора: {locator_data}\n"
-                f"Поддерживаемые типы: {SUPPORTED_TYPES}")
+        base_keys = [key for key in locator_data if key in get_locator_by]
+        if not base_keys:
+            raise ValueError(f"Нет базового типа локатора: {locator_data}")
+
+        base_locator = get_locator_by[base_keys[0]](container, locator_data)
+        for key in base_keys[1:]:
+            base_locator = base_locator.and_(get_locator_by[key](container, locator_data))
 
         if 'filter_text' in locator_data:
             base_locator = base_locator.filter(has_text=_format(locator_data['filter_text']))
@@ -194,14 +194,21 @@ class YamlLocatorsLoader:
 
     def get_locator_by_name(self, page_file_name: str, locator_name: str, **kwargs):
         """Возвращает локатор по имени из YAML"""
-        locators = self.locator_registry(page_file_name)
         locator_name = locator_name.upper().strip()
 
-        if locator_name not in locators:
-            raise KeyError(
-                f"Локатор {locator_name} не найден в списке локаторов для страницы {page_file_name}")
+        locator_data = None
+        locators = self.locator_registry(page_file_name)
+        if locator_name in locators:
+            locator_data = locators[locator_name]
 
-        locator_data = locators[locator_name]
+        if locator_data is None and page_file_name != 'base_page.yaml':
+            base_locators = self.locator_registry('base_page.yaml')
+            if locator_name in base_locators:
+                locator_data = base_locators[locator_name]
+
+        if locator_data is None:
+            raise KeyError(
+                f"Локатор {locator_name} не найден ни в {page_file_name}, ни в base_page.yaml")
 
         if 'frame' in locator_data:
             frame_data = locator_data['frame']
