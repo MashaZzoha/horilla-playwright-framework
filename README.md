@@ -17,7 +17,7 @@
 
 Фреймворк построен по слоям:
 
-- **`WebContext`** — инфраструктура (браузер, локаторы, каталог страниц, URL, БД),
+- **`Context`** — инфраструктура (браузер, локаторы, каталог страниц, URL, БД),
 - **`Pages`** — текущая страница + прокси методов + HTMX-ожидание,
 - **`BasePage`** — действия на странице, проверки, переходы,
 - **`BasePagesStore`** — каталог страниц (Page Factory),
@@ -31,7 +31,7 @@
 - `Pages` — точка входа в тестах (`pages.open_page(...)`, `pages.click(...)`).
 - `browser_page` — Playwright `Page` (вкладка), не путать с Page Object.
 - HTMX-ожидание после `open_page` (Horilla использует HTMX).
-- Проверки БД — через `web_context.horilla_provider` и `web_context.check`.
+- Проверки БД — через `context.horilla_provider` и `context.check`.
 - SQL-запросы — в `HorillaQueries` (`@staticmethod` + `@attach_source_query` → attach в Allure).
 
 ## Тестируемое приложение (Horilla CRM)
