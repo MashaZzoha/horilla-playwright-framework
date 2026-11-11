@@ -35,7 +35,7 @@ def retry(func):
     return decorator
 
 
-class WebContext:
+class Context:
     """Класс web-контекст. Реализует контекст для работы с браузером."""
 
     def __init__(self, browser_page: Page, store_pages: Type[BasePagesStore], url_manager: URLManager):
@@ -49,6 +49,20 @@ class WebContext:
             self.set_url_manager(url_manager)
         self._db_registry = {}
         self._check = None
+        self._pages = None
+
+    def __getattr__(self, name):
+        """Передаёт методы Pages, не ломая property pages."""
+        if name.startswith("_"):
+            raise AttributeError(name)
+        # обход рекурсии
+        pages = object.__getattribute__(self, "_pages")
+        if pages is None:
+            from factory.pages import Pages
+            pages = Pages(self)
+            object.__setattr__(self, "_pages", pages)
+
+        return getattr(pages, name)
 
     @property
     def store_pages(self):
