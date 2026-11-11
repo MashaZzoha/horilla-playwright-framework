@@ -1,9 +1,24 @@
 import random
 
 import cyrtranslit
+from faker import Faker
 from russian_names import RussianNames
 
 from utils.allure_utils import step
+
+_fake = Faker('en_US')
+
+
+def get_random_word(min_size: int = None):
+    """
+    Сгенерировать случайное слово заданной минимальной длины
+    :param min_size: минимальная длина слова
+    """
+    word = _fake.word()
+    if min_size:
+        while len(word) < min_size:
+            word += _fake.word()
+    return word
 
 
 def generate_new_fio():
