@@ -9,12 +9,12 @@ logger = get_logger(__name__)
 class Checker:
     """Класс для проверок ответов от БД и сервисов"""
 
-    def __init__(self, web_context):
+    def __init__(self, context):
         """
         Инициализатор класса
-        :param web_context: WebContext
+        :param context: Context
         """
-        self.ctx = web_context
+        self.ctx = context
 
     @step("Проверить {logentry}")
     def check_user_exists(self, logentry: str, timeout: int = 10, interval: int = 2):
@@ -29,6 +29,7 @@ class Checker:
         start_time = time()
         while time() - start_time < timeout:
             response = self.ctx.horilla_provider.get_changes_by_logentry(logentry)
+            sleep(10)
             if response:
                 break
             sleep(interval)
