@@ -1,4 +1,4 @@
-from factory.web_context import WebContext
+from factory.context import Context
 from utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -7,8 +7,8 @@ logger = get_logger(__name__)
 class Pages:
     """Класс управления текущей страницей"""
 
-    def __init__(self, web_context: WebContext):
-        self.context = web_context
+    def __init__(self, context: Context):
+        self.context = context
         self._current_page = None
 
     @property
@@ -25,11 +25,7 @@ class Pages:
 
     def open_page(self, page_name: str, **kwargs):
         self.context.goto(page_name, **kwargs)
-        self.context.browser_page.locator(
-            ".htmx-request, .htmx-settling, .htmx-swapping"
-        ).wait_for(state="detached", timeout=15000)
-        page = self.page(page_name)
-        return page
+        return self.page(page_name)
 
     def __getattr__(self, name):
         """Передаёт методы BasePage на текущую страницу"""
