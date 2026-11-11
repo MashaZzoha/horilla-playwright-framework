@@ -1,0 +1,4 @@
+Алерт Успешная авторизация:
+  role: alert
+  name: Login successful
+  exact: false

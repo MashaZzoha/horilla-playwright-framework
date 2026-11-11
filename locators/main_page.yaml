@@ -1,3 +1,16 @@
-Принять куки:
-  role: button
-  name: Продолжить
+Приветствие:
+  role: heading
+  name: "Welcome,"
+  exact: false
+Приветствие пользователя:
+  role: heading
+  name: "Welcome, {first_name} {last_name}"
+#  Авторизованный пользователь: first_name - имя.capitalize(), last_name - фамилия.capitalize()
+Home активна:
+  role: link
+  name: Home
+  css: a[class*='hover']
+Алерт Успешная авторизация:
+  role: alert
+  name: Login successful
+  exact: false

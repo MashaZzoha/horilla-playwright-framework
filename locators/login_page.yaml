@@ -23,3 +23,9 @@
 Кнопка Войти:
   role: button
   name: Arrow Sign In
+Кнопка Показать пароль:
+  css: img#eyeHideIcon:not(.hidden)
+Кнопка Скрыть пароль:
+  css: img#eyeIcon:not(.hidden)
+
+
