@@ -1,0 +1,6 @@
+Заголовок Leads:
+  role: heading
+  name: Leads
+Меню Leads:
+  role: link
+  name: Leads
