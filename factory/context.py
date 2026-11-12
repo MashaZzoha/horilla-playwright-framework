@@ -5,12 +5,14 @@ from playwright.sync_api import Page
 
 from config.settings import PROJECT_ROOT, settings
 from factory.base_pages_store import BasePagesStore
+from factory.horilla_client import HorillaClient, HorillaClientProvider
 from factory.queries.horilla_db import HorillaQueries
+from factory.test_data import TestDataKeeper
 from factory.url_manager import URLManager
 from factory.yaml_locator_loader import YamlLocatorsLoader
 from utils.allure_utils import attach_screenshot, step
-from utils.exceptions import (UnknownConfigException, UnknownDbException,
-                              UnsupportedStorePages, UnsupportedUrlManager)
+from utils.exceptions import (
+    UnknownConfigException, UnknownDbException, UnsupportedStorePages, UnsupportedUrlManager)
 from utils.logger import get_logger
 from utils.postgresql_provider import PostgreSQLProvider
 
@@ -38,15 +40,25 @@ def retry(func):
 class Context:
     """Класс web-контекст. Реализует контекст для работы с браузером."""
 
-    def __init__(self, browser_page: Page, store_pages: Type[BasePagesStore], url_manager: URLManager):
+    def __init__(
+            self,
+            browser_page: Page,
+            store_pages: Type[BasePagesStore],
+            url_manager: URLManager,
+            test_data_keeper=None):
+
         self.browser_page = browser_page
         self.yaml_locator_loader = YamlLocatorsLoader(self.browser_page, PROJECT_ROOT, 'locators')
+        self.horilla_client_provider = HorillaClientProvider(self)
         self._store_pages = None
         self._url_manager = None
         if store_pages:
             self.set_store_pages(store_pages)
         if url_manager:
             self.set_url_manager(url_manager)
+        if not test_data_keeper:
+            test_data_keeper = TestDataKeeper()
+        self.test_data = test_data_keeper
         self._db_registry = {}
         self._check = None
         self._pages = None
@@ -85,6 +97,30 @@ class Context:
         """Провайдер для работы с БД PostgreSQL horilla_db"""
         return self.get_db_provider(
             'db', db_name='horilla', provider=PostgreSQLProvider, query_storage=HorillaQueries)
+
+    @property
+    def horilla_client(self):
+        """
+        Получить данные клиента из хранилища тестовых данных
+        :return: HorillaClient
+        """
+        return self.test_data.horilla_client
+
+    @horilla_client.setter
+    def horilla_client(self, value: HorillaClient):
+        """
+        Записать данные клиента в хранилище тестовых данных
+        :param value: HorillaClient
+        """
+        if isinstance(value, HorillaClient):
+            self.test_data.horilla_client = value
+        else:
+            raise AttributeError('Ожидается объект HorillaClient')
+
+    @horilla_client.deleter
+    def horilla_client(self):
+        """Удалить данные клиента из хранилища тестовых данных"""
+        del self.test_data.horilla_client
 
     @property
     def check(self):
