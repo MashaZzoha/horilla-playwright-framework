@@ -1,0 +1,5 @@
+Заголовок Reports:
+  role: heading
+  name: Reports
+Меню Reports:
+  css: a#reports
