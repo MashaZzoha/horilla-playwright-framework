@@ -13,6 +13,7 @@ class TestDataJSONEncoder(JSONEncoder):
 
 class TestDataKeeper(object):
     """Класс-хранитель тестовых данных"""
+
     def __init__(self):
         self._data = {}
         logger.info(f'Инициализирован хранитель тестовых данных: {self}')
