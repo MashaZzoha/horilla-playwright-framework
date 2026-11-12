@@ -9,8 +9,8 @@ from utils.logger import get_logger
 
 logger = get_logger(__name__)
 
-SUPPORTED_TYPES = ("role", "label", "placeholder", "text", "alt", "title", "test_id", "css", "xpath", "frame")
-FILTER_KEYS = ('filter_text', 'filter_not_text')
+SUPPORTED_TYPES = ('role', 'label', 'placeholder', 'text', 'alt', 'title', 'test_id', 'css', 'xpath', 'frame')
+FILTER_KEYS = ('filter_text', 'filter_not_text', 'first')
 
 
 class YamlLocatorsLoader:
@@ -137,9 +137,8 @@ class YamlLocatorsLoader:
                 )
 
         get_locator_by = {
-            "role": lambda c, loc: c.get_by_role(loc["role"],
-                                                 name=_format(loc["name"]) if loc.get("name") else None,
-                                                 exact=loc.get("exact", True)),
+            "role": lambda c, loc: c.get_by_role(
+                loc["role"], name=_format(loc["name"]) if loc.get("name") else None, exact=loc.get("exact", True)),
             "label": lambda c, loc: c.get_by_label(loc["label"]),
             "placeholder": lambda c, loc: c.get_by_placeholder(loc["placeholder"]),
             "text": lambda c, loc: c.get_by_text(_format(loc["text"]), exact=loc.get("exact", True)),
@@ -162,6 +161,8 @@ class YamlLocatorsLoader:
             base_locator = base_locator.filter(has_text=_format(locator_data['filter_text']))
         if 'filter_not_text' in locator_data:
             base_locator = base_locator.filter(has_not_text=_format(locator_data['filter_not_text']))
+        if locator_data.get('first') is True:
+            base_locator = base_locator.first
         return base_locator
 
     @staticmethod
