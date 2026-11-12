@@ -8,6 +8,7 @@ logger = get_logger(__name__)
 
 class URLManager:
     """Класс для хранения и обработки URL-адресов. Позволяет получать адрес по имени и пробрасывать параметры"""
+
     def __init__(self, base_url: str, name: str = "URLManager"):
         self.base_url = base_url.rstrip("/")
         self.name = name
