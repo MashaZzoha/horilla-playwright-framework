@@ -42,7 +42,8 @@ class LoginPage(BasePage):
         self.input_verified('Поле ввода Пароль', password, delay=delay)
         self.click('Кнопка Войти')
         if success:
-            self.page('Главная страница')
             assert self.has_element('Алерт Успешная авторизация'), (
                 "Алерт об успешной авторизации не отобразился на странице")
-        self.page('Страница Авторизации')
+            return self.page('Главная страница')
+
+        return self.page('Страница Авторизации')
