@@ -12,6 +12,12 @@ class Logger:
             log_format: str = "%(asctime)s | %(levelname)s | %(name)s:%(lineno)d | %(message)s",
             log_level: str = 'INFO',
             log_file: str = 'horilla.log'):
+        """
+        __init__
+        :param log_format: формат логов
+        :param log_level: уровень логирования
+        :param log_file: файл для хранения логов
+        """
 
         self.log_level = logging.getLevelName(os.environ.get('LOG_LEVEL', log_level).upper().strip())
         self.formatter = logging.Formatter(log_format)

@@ -28,6 +28,14 @@ class PostgreSQLProvider:
     """Провайдер для работы с БД PostgreSQL"""
 
     def __init__(self, host: str, port: int, dbname: str, user: str, password: str):
+        """
+        __init__
+        :param host: хост
+        :param port: порт
+        :param dbname: имя БД
+        :param user: логин
+        :param password: пароль
+        """
         self.connection_str = f"host={host} port={port} dbname={dbname} user={user} password={password}"
         logger.debug(f"Connection string: {self.connection_str}")
         self.conn = None
