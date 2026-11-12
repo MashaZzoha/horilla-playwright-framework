@@ -1,7 +1,12 @@
 from factory.base_pages_store import BasePagesStore
 from factory.context import Context
 from pages.login_page import LoginPage
-from pages.main_page import MainPage
+from pages.home_page import HomePage
+from pages.sales_page import SalesPage
+from pages.people_page import PeoplePage
+from pages.analytics_page import AnalyticsPage
+from pages.schedule_page import SchedulePage
+from pages.my_jobs_page import MyJobsPage
 
 
 class HorillaStorePages(BasePagesStore):
@@ -11,5 +16,10 @@ class HorillaStorePages(BasePagesStore):
 
         self.page_registry([
             {'Страница Авторизации': LoginPage},
-            {'Главная страница': MainPage},
+            {'Главная страница': HomePage},
+            {'Страница вкладки Sales': SalesPage},
+            {'Страница вкладки People': PeoplePage},
+            {'Страница вкладки Analytics': AnalyticsPage},
+            {'Страница вкладки Schedule': SchedulePage},
+            {'Страница вкладки My Jobs': MyJobsPage}
         ])
