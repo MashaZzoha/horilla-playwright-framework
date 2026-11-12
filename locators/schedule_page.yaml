@@ -1,0 +1,6 @@
+Заголовок Calendar:
+  role: heading
+  name: Calendar
+Меню Calendar:
+  role: link
+  name: Calendar
