@@ -1,7 +1,7 @@
 from faker import Faker
 from utils.allure_utils import attach, step
 from utils.logger import get_logger
-from utils.test_data import generate_new_fio, create_email
+from utils.data_generator import generate_new_fio, create_email
 
 loger = get_logger(__name__)
 _new = Faker('ru_RU')

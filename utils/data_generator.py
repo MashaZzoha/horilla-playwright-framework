@@ -21,7 +21,7 @@ def get_random_word(min_size: int = None):
     return word
 
 
-def generate_new_fio():
+def generate_new_fio(split: bool = False):
     """Сгенерировать новые ФИО"""
     gender = random.choice(["М", "Ж"])
     gender = 0.0 if gender == "Ж" else 1.0
@@ -29,6 +29,8 @@ def generate_new_fio():
     first_name = RussianNames(count=1, patronymic=False, surname=False, gender=gender).get_batch()[0]
     middle_name = RussianNames(count=1, name=False, surname=False, gender=gender).get_batch()[0]
     fio = f"{last_name} {first_name} {middle_name}"
+    if split:
+        fio = fio.split(' ')
     return fio
 
 
@@ -36,7 +38,7 @@ def generate_new_fio():
 def create_email():
     """Создать адрес личной электронной почты для клиента"""
     domain = random.choice(['@gmail.com', '@yandex.ru', '@qq.com', '@mail.ru'])
-    fio = generate_new_fio().split(' ')
+    fio = generate_new_fio(split=True)
     last_name = cyrtranslit.to_latin(fio[0], 'ru').lower().replace("'", "")
     first_name = cyrtranslit.to_latin(fio[1], 'ru').lower().replace("'", "")
     middle_name = cyrtranslit.to_latin(fio[2], 'ru').lower().replace("'", "")

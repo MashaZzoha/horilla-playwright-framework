@@ -3,7 +3,7 @@ import pytest
 
 from config.settings import settings
 from utils.allure_utils import step
-from utils.test_data import get_random_word
+from utils.data_generator import get_random_word
 
 wrong_username = get_random_word(min_size=5)
 wrong_password = get_random_word(min_size=7)
