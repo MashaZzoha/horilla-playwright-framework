@@ -1,0 +1,6 @@
+Заголовок My Review Jobs:
+  role: heading
+  name: My Review Jobs
+Меню Review Jobs:
+  role: link
+  name: Review Jobs
