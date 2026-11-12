@@ -1,0 +1,7 @@
+Заголовок Accounts:
+  role: heading
+  name: Accounts
+  first: true
+Меню Accounts:
+  role: link
+  name: Accounts
