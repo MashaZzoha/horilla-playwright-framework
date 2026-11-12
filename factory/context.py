@@ -11,8 +11,8 @@ from factory.test_data import TestDataKeeper
 from factory.url_manager import URLManager
 from factory.yaml_locator_loader import YamlLocatorsLoader
 from utils.allure_utils import attach_screenshot, step
-from utils.exceptions import (
-    UnknownConfigException, UnknownDbException, UnsupportedStorePages, UnsupportedUrlManager)
+from utils.exceptions import (UnknownConfigException, UnknownDbException,
+                              UnsupportedStorePages, UnsupportedUrlManager)
 from utils.logger import get_logger
 from utils.postgresql_provider import PostgreSQLProvider
 
