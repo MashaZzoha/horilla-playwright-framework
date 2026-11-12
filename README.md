@@ -79,4 +79,7 @@ isort .
 ## Автор
 Проект создан как портфолио для демонстрации навыков построения UI-фреймворка с нуля 
 (Page Factory, Playwright, Pytest, Allure, Docker, PostgreSQL).
+
+Расширение для поиска Playwright локаторов для DevTools PW Locator Inspector (Allow in Incognito):
+- https://chromewebstore.google.com/detail/pw-locator-inspector/bldolfbecchcjipcbmflacdophpmhdng
 ```
