@@ -2,3 +2,15 @@
   role: alert
   name: Login successful
   exact: false
+Активная вкладка меню:
+  role: link
+  name: '{link_name}'
+  css: a[class*='hover']
+# link_name - название ссылки на плашке (Home, Sales, People, Analytics, Schedule, My Jobs)
+Неактивная вкладка меню:
+  role: link
+  name: '{link_name}'
+  css: a:not([class*='hover'])
+# link_name - название ссылки на плашке (Home, Sales, People, Analytics, Schedule, My Jobs)
+
+
