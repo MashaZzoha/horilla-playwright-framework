@@ -18,7 +18,6 @@ class Logger:
         :param log_level: уровень логирования
         :param log_file: файл для хранения логов
         """
-
         self.log_level = logging.getLevelName(os.environ.get('LOG_LEVEL', log_level).upper().strip())
         self.formatter = logging.Formatter(log_format)
 
