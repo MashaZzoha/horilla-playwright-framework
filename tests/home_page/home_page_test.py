@@ -10,4 +10,4 @@ class TestHomePage:
     @pytest.mark.parametrize('login_to_crm', [dict(Пользователь='admin')], indirect=True)
     def test_verify_main(self, context, login_to_crm):
         with step("Открыть главную страницу"):
-            home_page = login_to_crm
+            pass
