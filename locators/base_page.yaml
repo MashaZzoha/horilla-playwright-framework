@@ -32,6 +32,15 @@
 Кнопка Многостраничная форма:
   role: link
   name: Multi-Step Form
+Поле Contact Number:
+  role: textbox
+  name: Enter Contact Number
+Поле Annual Revenue:
+  role: spinbutton
+  name: Annual Revenue
+Поле Number of Employees:
+  role: spinbutton
+  name: Number of Employees
 Прогресс-бар:
   css: ul.progress
 Активная стадия прогресса:
@@ -45,3 +54,9 @@
 Кнопка Previous:
   role: button
   name: Previous
+Кнопка Save & New:
+  role: button
+  name: Save & New
+Кнопка Save:
+  role: button
+  name: Save

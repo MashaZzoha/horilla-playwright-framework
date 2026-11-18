@@ -7,3 +7,60 @@
   name: Accounts
 Форма Create Account:
   css: form#account-form-view
+Одностраничная форма account:
+  css: div#account-form-view-container
+Многостраничная форма account:
+  css: div#account-form-view-multi-container
+Поле Account Name:
+  placeholder: Enter Account Name
+Поле Rating:
+  role: textbox
+  name: Rating
+Поле Account Number:
+  role: textbox
+  name: Account Number
+Поле Website:
+  role: textbox
+  name: Website
+  exact: false
+Поле Account Site:
+  role: textbox
+  name: Account Site
+  exact: false
+Поле Billing City:
+  role: textbox
+  name: Billing City
+Поле Billing District:
+  role: textbox
+  name: Billing District
+Поле Billing State:
+  role: textbox
+  name: Billing State
+Поле Billing Zip:
+  role: textbox
+  name: Billing Zip
+Поле Shipping City:
+  role: textbox
+  name: Shipping City
+Поле Shipping State:
+  role: textbox
+  name: Shipping State
+Поле Shipping District:
+  role: textbox
+  name: Shipping District
+Поле Shipping Zip:
+  role: textbox
+  name: Shipping Zip
+Поле Description:
+  role: textbox
+  name: Description
+Переключатель Is Partner:
+  css: div.peer
+Алерт Успех Account created:
+  role: alert
+  name: Account created successfully
+  exact: false
+Алерт Успех Account was created:
+  role: alert
+  name: Account was successfully created
+  exact: false
