@@ -10,9 +10,14 @@ from pages.schedule_page import SchedulePage
 
 
 class HorillaStorePages(BasePagesStore):
-    """Каталог страниц Horilla"""
+    """Каталог страниц Horilla CRM"""
 
-    def __init__(self, context: Context, store='Магазин страниц Horilla'):
+    def __init__(self, context: Context, store='Каталог страниц Horilla'):
+        """
+        Инициализация класса каталога страниц HorillaStorePages
+        :param context: вэб-контекст
+        :param store: каталог страниц
+        """
         super().__init__(context, store=store)
 
         self.page_registry([
