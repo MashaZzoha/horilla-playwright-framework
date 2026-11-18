@@ -29,6 +29,10 @@ class BasePage:
 
     @staticmethod
     def time_sec(timeout: int = None):
+        """
+        Перевести время из миллисекунд в секунды (для удобочитаемости в отчётах и логах)
+        :param timeout: время ожидания в миллисекундах
+        """
         return f"{timeout / 1000:.1f} сек." if timeout else 'время ожидания по умолчанию'
 
     def _get(self, locator: str, **kwargs) -> Locator:
@@ -223,7 +227,7 @@ class BasePage:
         :param text: значение
         :param retries: число попыток
         :param delay: пауза после ввода перед проверкой (мс)
-        :param timeout: таймаут ожидания элемента
+        :param timeout: время ожидания элемента
         :param kwargs: параметры динамического локатора
         """
         attempts = 0
@@ -244,6 +248,39 @@ class BasePage:
 
         raise AssertionError(
             f"Не удалось зафиксировать значение '{text}' в поле '{locator}' за {attempts} попыток")
+
+    @step("Заполнить поля ввода значениями: {fields}")
+    def input_verify_batch(
+            self,
+            fields: dict[str, str],
+            retries: int = 3,
+            delay: int = 150,
+            timeout: int = None,
+            **kwargs):
+        """
+        Заполнить поля ввода fields.keys значениями fields.values
+        :param fields: словарь {имя локатора: значение}
+        :param retries: количество попыток ввода
+        :param delay: интервал между попытками ввода
+        :param timeout: время ожидания элемента
+        :param kwargs: параметры динамического локатора
+        """
+        fields = {key: str(value) for key, value in fields.items()}
+        attempts = 0
+        mismatched = []
+        while attempts < retries:
+            mismatched = []
+            for locator, text in fields.items():
+                self.input_text(locator, text, timeout=timeout, **kwargs)
+                self.browser_page.wait_for_timeout(delay)
+                element = self.get_element(locator, **kwargs)
+                if element.input_value() != text:
+                    mismatched.append(locator)
+            if not mismatched:
+                return self
+            retries += 1
+            logger.debug(f"[{self.page_name}] Не закрепились поля: {mismatched}, попытка {attempts}")
+        raise AssertionError(f"Не удалось зафиксировать значения в полях: {mismatched} за {attempts} попыток")
 
     @step("Получить текст из элемента '{locator}'")
     def get_text(self, locator: str, timeout: int = None, **kwargs) -> str:
@@ -310,6 +347,56 @@ class BasePage:
         :param kwargs: значение для динамического локатора
         """
         self.get_element(locator, timeout=timeout, **kwargs).press(key)
+        return self
+
+    @step("Выбрать значение '{option}' в выпадающем меню селектора {locator}")
+    def select_option(self, locator: str, option: str = None, timeout: int = None, **kwargs):
+        """
+        Выбрать опцию в выпадающем меню селектора
+        :param locator: локатор выпадающего меню (select)
+        :param option: значение выбора
+        :param timeout: время ожидания
+        :param kwargs: значение для динамического локатора
+        """
+        self.get_element(locator, timeout, **kwargs).select_option(label=option)
+        return self
+
+    @step("Выбрать опцию {option} в селекторе Select2 {selector_name}")
+    def select2_option(self, selector_name: str, option: str, timeout: int = 5000):
+        """
+        Выбрать опцию в селекторе Select2
+        :param selector_name: название селектора (частичное значение атрибута name/id)
+        :param option: вариант выбора
+        :param timeout: время ожидания элемента на странице
+        """
+        self.click("Селектор select2", selector_name=selector_name, timeout=timeout)
+        self.click("Опция select2", selector_name=selector_name, option=option, timeout=timeout)
+        return self
+
+    @step("Выбрать значения в селекторах Select2 : {selections}")
+    def select2_option_batch(
+            self,
+            selections: dict[str, str],
+            timeout: int = 5000):
+        """
+        Заполнить поля ввода fields.keys значениями fields.values
+        :param selections: словарь {локатор селектора: значение}
+        :param timeout: время ожидания элемента
+        """
+        selections = {key: str(value) for key, value in selections.items()}
+        for selector2, option in selections.items():
+            self.select2_option(selector2, option, timeout=timeout)
+        return self
+
+    @step('Открыть форму Create Lead или Create Account')
+    def open_form_new(self):
+        """Открыть форму для внесения данных по новому лиду или профилю"""
+        form = 'Форма Create Lead' if self.page('Страница вкладки Sales') else 'Форма Create Account'
+        if self.has_element('Кнопка Add New'):
+            self.click('Кнопка Add New')
+        else:
+            self.click('Кнопка New')
+        assert self.has_element(form), f"Не открылась форма '{form}'"
         return self
 
     def refresh_page(self, timeout=None):
