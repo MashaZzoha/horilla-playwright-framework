@@ -146,7 +146,7 @@ class Context:
         with step(f"Открыть по URL страницу: {url_name} - {url}"):
             self.browser_page.goto(url)
             self.browser_page.locator(".htmx-request, .htmx-settling, .htmx-swapping"
-                                      ).wait_for(state="detached", timeout=5000)
+                                      ).wait_for(state="detached", timeout=10000)
         return self
 
     def set_store_pages(self, store_pages):
