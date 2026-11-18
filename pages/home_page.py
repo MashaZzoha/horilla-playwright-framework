@@ -18,6 +18,7 @@ class HomePage(BasePage):
         self.yaml_locator_loader.locator_registry(self.page_file_name)
         self.add_elements_to_check("Приветствие", "Home активна")
         self.check_page()
+        self.check_active_tab(tab='Home')
 
     def open_tab(self, button: str, page_name: str, timeout: int = None):
         """

@@ -18,3 +18,4 @@ class PeoplePage(BasePage):
         self.yaml_locator_loader.locator_registry(self.page_file_name)
         self.add_elements_to_check('Заголовок Accounts', 'Меню Accounts')
         self.check_page()
+        self.check_active_tab(tab='People')

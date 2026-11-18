@@ -18,3 +18,4 @@ class SchedulePage(BasePage):
         self.yaml_locator_loader.locator_registry(self.page_file_name)
         self.add_elements_to_check('Заголовок Calendar', 'Заголовок Calendar')
         self.check_page()
+        self.check_active_tab(tab='Schedule')

@@ -185,6 +185,19 @@ class BasePage:
                     raise ElementsNotFound(msg)
         return self
 
+    @step('Проверить отображение активной плашки {tab}')
+    def check_active_tab(self, tab: str):
+        """
+        Проверить отображение активной плашки при открытии соответствующей страницы
+        :param tab: название плашки (Home, Sales, People, Analytics, Schedule, My Jobs)
+        """
+        if not self.has_element('Активная кнопка меню', link_name=tab):
+            msg = (f"Активная плашка страницы: {tab} не отобразилась.\n"
+                   f"Возможно не открылась {self.page_name.upper()}")
+            logger.error(msg)
+            raise ElementsNotFound(msg)
+        return self
+
     def page(self, page_name: str):
         """Получить объект новой страницы по названию из каталога страниц"""
         return self.context.get_page(page_name)
