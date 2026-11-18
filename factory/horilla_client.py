@@ -30,7 +30,8 @@ class HorillaClient:
             industry: str = None,
             ownership: str = None,
             employee_number: int = None,
-            annual_revenue: int = None):
+            annual_revenue: int = None,
+            website: str = None):
         """
         Инициализация класса пользователя Horilla CRM
         :param first_name: имя
@@ -46,6 +47,7 @@ class HorillaClient:
         :param ownership: юридическая форма собственности
         :param employee_number: количество работников
         :param annual_revenue: годовая выручка
+        :param website: вэбсайт
         """
         self.first_name = first_name
         self.last_name = last_name
@@ -60,6 +62,7 @@ class HorillaClient:
         self.ownership = ownership
         self.employee_number = employee_number
         self.annual_revenue = annual_revenue
+        self.website = website
 
     def __call__(self, *args, **kwargs):
         for key, value in kwargs.items():
@@ -82,6 +85,7 @@ class HorillaClient:
             Форма собственности: {self.ownership}
             Количество работников: {self.employee_number}
             Годовая выручка: {self.annual_revenue}
+            Вэбсайт: {self.website}
             """
 
 
@@ -104,7 +108,10 @@ class HorillaClientProvider:
             status_name: str = None,
             status_order: int = None,
             probability: int = None,
-            lead: bool = False):
+            lead: bool = False,
+            rating: int = None,
+            acc_number: int = None,
+            shipping: bool = False):
         """
         Создать нового клиента
         :param industry: отрасль
@@ -114,6 +121,9 @@ class HorillaClientProvider:
         :param status_order: очередь
         :param probability: % возможного исхода
         :param lead: True-добавить данные для создания лида
+        :param rating: рейтинг
+        :param acc_number: номер профиля
+        :param shipping: True - адрес доставки отличается от юридического адреса
         :return: HorillaClient
         """
         client = HorillaClient()
@@ -137,6 +147,11 @@ class HorillaClientProvider:
                 status_name=status_name,
                 status_order=status_order,
                 probability=probability)
+        else:
+            client.acc_name = f"{client.last_name}_{str(random.randint(123456789, 987654321))}"
+            self.__set_website(client)
+            self.__set_additional_account_data(rating=rating, acc_number=acc_number)
+            self.__set_shipping_address(shipping=shipping)
         attach('Получены данные клиента', body=str(client))
         return client
 
@@ -173,6 +188,11 @@ class HorillaClientProvider:
         client.postal = str(postal)
         return client
 
+    @step('Установить клиенту вэбсайт')
+    def __set_website(self, client: HorillaClient):
+        client.website = _new.url()
+        return client
+
     @step('Установить данные для нового лида')
     def __set_new_lead_data(
             self,
@@ -199,3 +219,25 @@ class HorillaClientProvider:
         lead_status = [client.status_name, client.status_order, client.probability]
         attach('Статус лида: ', body=str(lead_status))
         return client
+
+    @step("Установить клиенту дополнительные данные")
+    def __set_additional_account_data(self, rating: int = None, acc_number: int = None):
+        client = self.context.horilla_client
+        client.rating = random.randint(1, 10) if not rating else rating
+        client.acc_number = random.randint(100, 999999) if not acc_number else acc_number
+        self.context.test_data.description = generate_sentence()
+        return self
+
+    @step('Установить адрес доставки для клиента')
+    def __set_shipping_address(self, shipping: bool = False):
+        client = self.context.horilla_client
+        if shipping:
+            city, postal = random.choice(list(city_postal.items()))
+            client.shipping_city = city
+            client.shipping_postal = postal
+        else:
+            client.shipping_city = client.city
+            client.shipping_postal = client.postal
+        shipping_address = [client.shipping_city, client.shipping_postal]
+        attach('Адрес доставки: ', body=str(shipping_address))
+        return self
