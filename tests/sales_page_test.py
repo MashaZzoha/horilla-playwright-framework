@@ -1,11 +1,6 @@
 import allure
 import pytest
 
-from utils.data_generator import get_random_word
-
-wrong_username = get_random_word(min_size=5)
-wrong_password = get_random_word(min_size=7)
-
 
 @allure.story('Проверка страницы Sales')
 @pytest.mark.sales_page_test
