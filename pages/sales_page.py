@@ -1,5 +1,6 @@
 import time
 
+from config.settings import settings
 from factory.context import Context
 from pages.base_page import BasePage
 from utils.allure_utils import step
@@ -22,6 +23,13 @@ class SalesPage(BasePage):
         self.add_elements_to_check('Заголовок Leads', 'Меню Leads')
         self.check_page()
 
+    @staticmethod
+    def lead_owner():
+        """Получить данные: имя и фамилию админа из settings.yaml"""
+        first_name = settings.users['admin'].get('first_name')  # "Зинаида"
+        last_name = settings.users['admin'].get('last_name')
+        return f"{first_name} {last_name}"
+
     @step("Заполнить окно Lead Stage данными: '{status_name}', '{status_order}', '{probability}'")
     def _add_lead_stage(self, status_name: str = None, status_order: int = None, probability: int = None):
         """
@@ -41,8 +49,7 @@ class SalesPage(BasePage):
         return self
 
     @step('Заполнение одностраничной формы ')
-    def single_step_add_new_lead(
-            self,):
+    def single_step_add_new_lead(self):
         """Заполнить одностраничную форму Create Lead"""
         client = self.context.horilla_client
         self.open_form_new()
@@ -50,7 +57,7 @@ class SalesPage(BasePage):
         self.select2_option_batch({
             'contact_number': '+7',
             'lead_source': client.lead_source,
-            'lead_owner': 'Зинаида Горновская',
+            'lead_owner': self.lead_owner(),
             'industry': client.industry,
             'country': client.country})
         self.input_verify_batch({
@@ -85,7 +92,7 @@ class SalesPage(BasePage):
         self.select2_option_batch({
             'contact_number': '+7',
             'lead_source': client.lead_source,
-            'lead_owner': 'Зинаида Горновская'})
+            'lead_owner': self.lead_owner()})
         self.input_verify_batch({
             'Поле First Name': client.first_name,
             'Поле Last Name': client.last_name,
