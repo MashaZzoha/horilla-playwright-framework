@@ -10,6 +10,11 @@ class URLManager:
     """Класс для хранения и обработки URL-адресов. Позволяет получать адрес по имени и пробрасывать параметры"""
 
     def __init__(self, base_url: str, name: str = "URLManager"):
+        """
+        Инициализация класса хранения и обработки URL-адресов URLManager
+        :param base_url: базовый URL
+        :param name: название хранилища
+        """
         self.base_url = base_url.rstrip("/")
         self.name = name
         self._url_storage: Dict[str, str] = {}
