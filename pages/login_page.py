@@ -11,6 +11,11 @@ class LoginPage(BasePage):
     """Класс страницы авторизации"""
 
     def __init__(self, context: Context, page_name: str):
+        """
+        Инициализация класса страницы авторизации LoginPage
+        :param context: вэб-контекст
+        :param page_name: название страницы
+        """
         super().__init__(context, page_name, page_file_name="login_page.yaml")
         self.yaml_locator_loader.locator_registry(self.page_file_name)
         self.add_elements_to_check("Форма авторизации", "Текст приветствия")
@@ -45,5 +50,4 @@ class LoginPage(BasePage):
             assert self.has_element('Алерт Успешная авторизация'), (
                 "Алерт об успешной авторизации не отобразился на странице")
             return self.page('Главная страница')
-
         return self.page('Страница Авторизации')
