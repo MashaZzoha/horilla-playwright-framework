@@ -109,8 +109,8 @@ def generate_business_data(
     return acc_source, ownership, industry, acc_type
 
 
-def generate_requirements():
-    """Генерация требований для поля requirements"""
-    requirements = randino.rand_sentence(language='ru')[0].replace('«', '').replace('»', '')
-    attach('Сгенерированы требования (requirements): ', requirements)
-    return requirements
+def generate_sentence():
+    """Генерация случайного предложения для полей Requirements/Description"""
+    sentence = randino.rand_sentence(language='ru')[0].replace('«', '').replace('»', '')
+    attach('Сгенерировано предложение: ', sentence)
+    return sentence
