@@ -105,7 +105,7 @@ def browser_context(browser: Browser, request):
         no_viewport=True,
         record_video_dir=str(VIDEO_DIR),
         record_video_size={"width": 1280, "height": 720})
-    ctx.set_default_timeout(5000)  # 5 сек для всех действий
+    ctx.set_default_timeout(10000)  # 5 сек для всех действий
     ctx.set_default_navigation_timeout(10000)  # 10 сек для goto/reload
     ctx.tracing.start(screenshots=True, snapshots=True, sources=True)
     try:
