@@ -2,15 +2,29 @@
   role: alert
   name: Login successful
   exact: false
-Активная вкладка меню:
+Активная кнопка меню:
   role: link
   name: '{link_name}'
   css: a[class*='hover']
 # link_name - название ссылки на плашке (Home, Sales, People, Analytics, Schedule, My Jobs)
-Неактивная вкладка меню:
+Неактивная кнопка меню:
   role: link
   name: '{link_name}'
   css: a:not([class*='hover'])
 # link_name - название ссылки на плашке (Home, Sales, People, Analytics, Schedule, My Jobs)
+Кнопка Add New:
+  role: button
+  name: Add New
+Кнопка New:
+  role: button
+  name: New
+Селектор select2:
+  css: select[name*='{selector_name}'] + span.select2-container span.selection
+# selector_name - название селектора2 (частичное значение атрибута name: industry/country)
+Опция select2:
+  css: ul[id*='{selector_name}'] li[role='option']
+  filter_text: "{option}"
+# selector_name - частичное id для опции селектора, указывающее на его принадлежность (industry/country)
+# option - опция в выпадающем списке селектора
 
 

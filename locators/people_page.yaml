@@ -5,3 +5,5 @@
 Меню Accounts:
   role: link
   name: Accounts
+Форма Create Account:
+  css: form#account-form-view

@@ -4,3 +4,80 @@
 Меню Leads:
   role: link
   name: Leads
+Форма Create Lead:
+  css: form#lead-form-view
+Кнопка Одностраничная форма:
+  role: link
+  name: Single-Step Form
+Одностраничная форма:
+  css: div#lead-form-view-container
+Кнопка Многостраничная форма:
+  role: link
+  name: Multi-Step Form
+Многостраничная форма:
+  css: div#lead-form-view-multi-container
+Прогресс-бар:
+  css: ul.progress
+Поле First Name:
+  placeholder: Enter First Name
+Поле Last Name:
+  placeholder: Enter Last Name
+Поле Email:
+  placeholder: Enter Email
+Поле Number of Employees:
+  role: spinbutton
+  name: Number of Employees
+Поле City:
+  role: textbox
+  name: City
+Поле Zip:
+  role: textbox
+  name: Zip
+Поле Annual Revenue:
+  role: spinbutton
+  name: Annual Revenue
+Поле Lead Company:
+  placeholder: Enter Lead Company
+Поле Requirements:
+  role: textbox
+  name: Requirements
+Поле Contact Number:
+  role: textbox
+  name: Enter Contact Number
+Кнопка Add Lead Stage:
+  role: button
+  name: '+ Add'
+Окно Create Lead Stage:
+  css: div#dynamicCreateModalBox
+Поле Status Name:
+  placeholder: Enter Status Name
+Поле Status Order:
+  placeholder: Enter Status Order
+Поле Status Color:
+  role: textbox
+  name: Status Color
+Поле Probability:
+  placeholder: Enter Probability
+Кнопка Save Lead Stage:
+  css: div#dynamicCreateModalBox form button
+  filter_text: Save
+Кнопка Save & New:
+  role: button
+  name: Save & New
+Кнопка Save:
+  role: button
+  name: Save
+Алерт Успех Lead created:
+  role: alert
+  name: Lead created successfully
+  exact: false
+Кнопка Next:
+  role: button
+  name: Next
+Кнопка Previous:
+  role: button
+  name: Previous
+Активная стадия прогресса:
+  xpath: //li[@class='active'][.//p[text()='{active_stage}']]
+# active_stage - активная стадия прогресса заполнения многостраничной формы
+# доступные стадии: Basic Information/Company Details/Location/Requirements
