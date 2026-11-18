@@ -8,14 +8,16 @@ logger = get_logger(__name__)
 
 
 class BasePagesStore:
-    """Базовый класс каталога страниц.
-    Реализует поиск в каталоге страниц по названию страницы"""
+    """
+    Базовый класс каталога страниц.
+    Реализует поиск в каталоге страниц по названию страницы
+    """
 
-    def __init__(self, context, store="Магазин страниц"):
+    def __init__(self, context, store="Каталог страниц"):
         """
-
-        :param context: Context
-        :param store:
+        Инициализация базового класса
+        :param context: вэб-контекст
+        :param store: каталог страниц
         """
         self.context = context
         self._store = store
@@ -42,8 +44,11 @@ class BasePagesStore:
         return self
 
     def page_registry(self, pages: List[Dict[str, Type[BasePage]]]):
-        """Регистрация страниц в каталоге страниц списком словарей:
-        [{'название страницы N': класс страницы N}, ...]"""
+        """
+        Регистрация страниц в каталоге страниц списком словарей:
+        [{'название страницы N': класс страницы N}, ...]
+        :param pages: страницы каталога
+        """
         logger.debug(f"[{self._store}] Идёт регистрация {len(pages)} страниц")
         for row in pages:
             for page_name, page_class in row.items():
