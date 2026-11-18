@@ -28,7 +28,6 @@ class Checker:
         start_time = time()
         while time() - start_time < timeout:
             response = self.ctx.horilla_provider.get_lead_by_email(email)
-            sleep(10)
             if response:
                 break
             sleep(interval)
@@ -48,7 +47,6 @@ class Checker:
         start_time = time()
         while time() - start_time < timeout:
             response = self.ctx.horilla_provider.get_account_by_phone(phone)
-            sleep(10)
             if response:
                 break
             sleep(interval)

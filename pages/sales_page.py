@@ -1,5 +1,3 @@
-import time
-
 from factory.context import Context
 from pages.base_page import BasePage
 from utils.allure_utils import step
@@ -67,8 +65,7 @@ class SalesPage(BasePage):
         })
         self._add_lead_stage(
             status_name=client.status_name, status_order=client.status_order, probability=client.status_order)
-        time.sleep(5)
-        self.click('Кнопка Save')
+        self.click('Кнопка Save', timeout=10000)
         assert self.has_element('Алерт Успех Lead created'), 'Возможно, не произошло создание нового лида!'
         return self
 
@@ -115,7 +112,6 @@ class SalesPage(BasePage):
         assert self.has_element('Кнопка Previous'), 'Не отобразилась кнопка Previous!'
         assert self.has_element('Кнопка Save & New'), 'Не отобразилась кнопка Save & New!'
         assert self.has_element('Кнопка Save'), 'Не отобразилась кнопка Save!'
-        time.sleep(5)
-        self.click('Кнопка Save')
+        self.click('Кнопка Save', timeout=10000)
         assert self.has_element('Алерт Успех Lead was created'), 'Возможно, не произошло создание нового лида!'
         return self

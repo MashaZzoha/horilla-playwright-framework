@@ -65,8 +65,7 @@ class PeoplePage(BasePage):
             'Поле Annual Revenue': client.annual_revenue,
             'Поле Number of Employees': client.employee_number,
             'Поле Description': self.context.test_data.description})
-        time.sleep(5)
-        self.click('Кнопка Save')
+        self.click('Кнопка Save', timeout=10000)
         assert self.has_element('Алерт Успех Account created'), 'Возможно, не произошло создание нового профиля!'
         return self
 
@@ -100,8 +99,7 @@ class PeoplePage(BasePage):
             'Поле Billing Zip': client.postal,
             'Поле Shipping City': client.shipping_city,
             'Поле Shipping Zip': client.shipping_postal})
-        time.sleep(5)
-        assert self.has_element('Кнопка Previous'), 'Не отобразилась кнопка Previous!'
+        assert self.has_element('Кнопка Previous', timeout=10000), 'Не отобразилась кнопка Previous!'
         self.click('Кнопка Next')
         self.input_verify_batch({
             'Поле Number of Employees': client.employee_number,
@@ -117,7 +115,6 @@ class PeoplePage(BasePage):
         self.input_text('Поле Description', self.context.test_data.description)
         assert self.has_element('Кнопка Previous'), 'Не отобразилась кнопка Previous!'
         assert self.has_element('Кнопка Save & New'), 'Не отобразилась кнопка Save & New!'
-        time.sleep(5)
-        self.click('Кнопка Save')
+        self.click('Кнопка Save', timeout=10000)
         assert self.has_element('Алерт Успех Account was created'), 'Возможно, не произошло создание нового профиля!'
         return self
