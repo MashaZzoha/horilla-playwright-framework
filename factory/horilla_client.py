@@ -5,7 +5,7 @@ from faker import Faker
 from utils.allure_utils import attach, step
 from utils.data_generator import (city_postal, create_email,
                                   generate_business_data, generate_new_fio,
-                                  generate_requirements, mobile_provider_codes)
+                                  generate_sentence, mobile_provider_codes)
 from utils.logger import get_logger
 
 loger = get_logger(__name__)
@@ -195,7 +195,7 @@ class HorillaClientProvider:
         client.status_name = random.choice(['New', 'Contacted', 'Qualified']) if not status_name else status_name
         client.status_order = random.choice([1, 2, 3]) if not status_order else status_order
         client.probability = random.randint(10, 100) if not probability else probability
-        self.context.test_data.requirements = generate_requirements()
+        self.context.test_data.requirements = generate_sentence()
         lead_status = [client.status_name, client.status_order, client.probability]
         attach('Статус лида: ', body=str(lead_status))
         return client
