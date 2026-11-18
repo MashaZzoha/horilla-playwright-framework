@@ -7,6 +7,8 @@ logger = get_logger(__name__)
 
 
 class TestDataJSONEncoder(JSONEncoder):
+    """Класс-хранитель тестовых данных JSON"""
+
     def default(self, obj):
         return obj.to_json()
 
@@ -15,6 +17,7 @@ class TestDataKeeper(object):
     """Класс-хранитель тестовых данных"""
 
     def __init__(self):
+        """Инициализация класса-хранителя тестовых данных"""
         self._data = {}
         logger.info(f'Инициализирован хранитель тестовых данных: {self}')
 
