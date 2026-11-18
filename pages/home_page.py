@@ -1,5 +1,6 @@
 from factory.context import Context
 from pages.base_page import BasePage
+from utils.allure_utils import step
 from utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -20,6 +21,7 @@ class HomePage(BasePage):
         self.check_page()
         self.check_active_tab(tab='Home')
 
+    @step("Открыть вкладку '{page_name}'")
     def open_tab(self, button: str, page_name: str, timeout: int = None):
         """
         Открыть вкладку через меню навигации
