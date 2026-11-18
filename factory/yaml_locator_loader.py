@@ -9,7 +9,7 @@ from utils.logger import get_logger
 
 logger = get_logger(__name__)
 
-SUPPORTED_TYPES = ('role', 'label', 'placeholder', 'text', 'alt', 'title', 'test_id', 'css', 'xpath', 'frame')
+SUPPORTED_TYPES = ('role', 'label', 'placeholder', 'text', 'alt', 'title', 'test_id', 'css', 'xpath', 'select', 'frame')
 FILTER_KEYS = ('filter_text', 'filter_not_text', 'first')
 
 
@@ -147,6 +147,7 @@ class YamlLocatorsLoader:
             "test_id": lambda c, loc: c.get_by_test_id(_format(loc["test_id"])),
             "css": lambda c, loc: c.locator(f"css={_format(loc['css'])}"),
             "xpath": lambda c, loc: c.locator(f"xpath={_format(loc['xpath'])}"),
+            "select": lambda c, loc: c.locator(f"css={_format(loc['select'])}"),
         }
 
         base_keys = [key for key in locator_data if key in get_locator_by]
