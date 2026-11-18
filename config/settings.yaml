@@ -6,6 +6,10 @@ users:
   admin:
       username: "zin-admin"
       password: "Admin@123"
+      first_name: "Зинаида"
+      last_name: "Горновская"
+      email: "admin.zinochka@example.com"
+      phone: "+7999123456"
 
 db:
   horilla:
