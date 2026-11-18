@@ -6,5 +6,9 @@ class HorillaQueries:
 
     @staticmethod
     @attach_source_query
-    def get_changes_by_logentry(logentry: str):
-        return f"SELECT changes FROM auditlog_logentry WHERE object_repr = '{logentry}'"
+    def get_lead_by_email(email: str):
+        """
+        Получить информацию по потенциальному клиенту из таблицы leads_lead по email
+        :param email: адрес электронной почты
+        """
+        return f"SELECT * FROM leads_lead WHERE email = '{email}'"
