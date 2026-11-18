@@ -1,6 +1,5 @@
 import time
 
-from config.settings import settings
 from factory.context import Context
 from pages.base_page import BasePage
 from utils.allure_utils import step
@@ -24,13 +23,6 @@ class SalesPage(BasePage):
         self.check_page()
         self.check_active_tab(tab='Sales')
 
-    @staticmethod
-    def lead_owner():
-        """Получить данные: имя и фамилию админа из settings.yaml"""
-        first_name = settings.users['admin'].get('first_name')  # "Зинаида"
-        last_name = settings.users['admin'].get('last_name')
-        return f"{first_name} {last_name}"
-
     @step("Заполнить окно Lead Stage данными: '{status_name}', '{status_order}', '{probability}'")
     def _add_lead_stage(self, status_name: str = None, status_order: int = None, probability: int = None):
         """
@@ -49,16 +41,16 @@ class SalesPage(BasePage):
         self.click('Кнопка Save Lead Stage')
         return self
 
-    @step('Заполнение одностраничной формы ')
+    @step('Заполнение одностраничной формы Create Lead')
     def single_step_add_new_lead(self):
         """Заполнить одностраничную форму Create Lead"""
         client = self.context.horilla_client
-        self.open_form_new()
-        assert self.has_element('Одностраничная форма'), 'Одностраничная форма не открылась!'
+        self.open_form_new('Форма Create Lead')
+        assert self.has_element('Одностраничная форма lead'), 'Одностраничная форма Create Lead не открылась!'
         self.select2_option_batch({
             'contact_number': '+7',
             'lead_source': client.lead_source,
-            'lead_owner': self.lead_owner(),
+            'lead_owner': self.get_owner(),
             'industry': client.industry,
             'country': client.country})
         self.input_verify_batch({
@@ -83,17 +75,17 @@ class SalesPage(BasePage):
     def multi_step_add_new_lead(self):
         """Заполнить многостраничную форму Create Lead"""
         client = self.context.horilla_client
-        self.open_form_new()
-        assert self.has_element('Одностраничная форма'), 'Одностраничная форма не открылась!'
+        self.open_form_new('Форма Create Lead')
+        assert self.has_element('Одностраничная форма lead'), 'Одностраничная форма Create Lead не открылась!'
         self.click('Кнопка Многостраничная форма')
-        assert self.has_element('Многостраничная форма'), 'Многостраничная форма не открылась!'
+        assert self.has_element('Многостраничная форма lead'), 'Многостраничная форма Create Lead не открылась!'
         assert self.has_element('Прогресс-бар'), 'Не отобразился прогресс-бар шагов многостраничной формы!'
         assert self.has_element('Активная стадия прогресса', active_stage='Basic Information'), (
             "Не отобразилась активная стадия прогресса 'Basic Information'")
         self.select2_option_batch({
             'contact_number': '+7',
             'lead_source': client.lead_source,
-            'lead_owner': self.lead_owner()})
+            'lead_owner': self.get_owner()})
         self.input_verify_batch({
             'Поле First Name': client.first_name,
             'Поле Last Name': client.last_name,
@@ -125,5 +117,5 @@ class SalesPage(BasePage):
         assert self.has_element('Кнопка Save'), 'Не отобразилась кнопка Save!'
         time.sleep(5)
         self.click('Кнопка Save')
-        assert self.has_element('Алерт Успех Lead created'), 'Возможно, не произошло создание нового лида!'
+        assert self.has_element('Алерт Успех Lead was created'), 'Возможно, не произошло создание нового лида!'
         return self
