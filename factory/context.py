@@ -46,7 +46,13 @@ class Context:
             store_pages: Type[BasePagesStore],
             url_manager: URLManager,
             test_data_keeper=None):
-
+        """
+        Инициализация класса Context (вэб-контекст)
+        :param browser_page: Playwright Page
+        :param store_pages: каталог страниц
+        :param url_manager: менеджер URL-адресов
+        :param test_data_keeper: хранитель тестовых данных
+        """
         self.browser_page = browser_page
         self.yaml_locator_loader = YamlLocatorsLoader(self.browser_page, PROJECT_ROOT, 'locators')
         self.horilla_client_provider = HorillaClientProvider(self)
@@ -79,8 +85,8 @@ class Context:
     @property
     def store_pages(self):
         """
-        Вернуть магазин страниц
-        :return: магазин страниц
+        Вернуть каталог страниц
+        :return: каталог страниц
         """
         return self._store_pages
 
@@ -145,8 +151,8 @@ class Context:
 
     def set_store_pages(self, store_pages):
         """
-        Установить новый магазин страниц для вэб-контекста
-        :param store_pages: магазин страниц
+        Установить новый каталог страниц для вэб-контекста
+        :param store_pages: каталог страниц
         """
         if not issubclass(store_pages, BasePagesStore):
             raise UnsupportedStorePages(f"Неподдерживаемый тип магазина страниц: {store_pages}")
