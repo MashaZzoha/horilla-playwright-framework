@@ -16,10 +16,10 @@ class Checker:
         """
         self.ctx = context
 
-    @step("Проверить создание лида: {email}")
+    @step("Проверить создание лида по адресу электронной почты: {email}")
     def check_lead_created(self, email: str, timeout: int = 30, interval: int = 2):
         """
-        Проверка, что лид был успешно создан
+        Проверка, что лид (потенциальный клиент) был успешно создан
         :param email: электронная почта
         :param timeout: максимальное время ожидания ответа от БД
         :param interval: интервал между повторными запросами
@@ -34,4 +34,24 @@ class Checker:
             sleep(interval)
         attach('Получен ответ от БД', body=str(response))
         assert response, f"Не найдено записи в БД по клиенту c адресом электронной почты: {email}"
+        return self
+
+    @step("Проверить создание профиля по номеру телефона: {phone}")
+    def check_account_created(self, phone: str, timeout: int = 30, interval: int = 2):
+        """
+        Проверка, что профиль был успешно создан
+        :param phone: номер телефона в формате +7 9847701216
+        :param timeout: максимальное время ожидания ответа от БД
+        :param interval: интервал между повторными запросами
+        """
+        response = []
+        start_time = time()
+        while time() - start_time < timeout:
+            response = self.ctx.horilla_provider.get_account_by_phone(phone)
+            sleep(10)
+            if response:
+                break
+            sleep(interval)
+        attach('Получен ответ от БД', body=str(response))
+        assert response, f"Не найдено записи в БД по клиенту c номером телефона: {phone}"
         return self
