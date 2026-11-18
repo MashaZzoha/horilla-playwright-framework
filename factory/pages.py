@@ -8,6 +8,10 @@ class Pages:
     """Класс управления текущей страницей"""
 
     def __init__(self, context: Context):
+        """
+        Инициализация класса управления страницами Pages
+        :param context: вэб-контекст
+        """
         self.context = context
         self._current_page = None
 
@@ -24,6 +28,11 @@ class Pages:
         return self._current_page
 
     def open_page(self, page_name: str, **kwargs):
+        """
+        Открыть страницу по названию из каталога
+        :param page_name: название страницы
+        :param kwargs: **kwargs
+        """
         self.context.goto(page_name, **kwargs)
         return self.page(page_name)
 
