@@ -26,5 +26,22 @@
   filter_text: "{option}"
 # selector_name - частичное id для опции селектора, указывающее на его принадлежность (industry/country)
 # option - опция в выпадающем списке селектора
-
-
+Кнопка Одностраничная форма:
+  role: link
+  name: Single-Step Form
+Кнопка Многостраничная форма:
+  role: link
+  name: Multi-Step Form
+Прогресс-бар:
+  css: ul.progress
+Активная стадия прогресса:
+  xpath: //li[@class='active'][.//p[text()='{active_stage}']]
+# active_stage - активная стадия прогресса заполнения многостраничной формы
+# доступные стадии Create Lead: Basic Information/Company Details/Location/Requirements
+# доступные стадии Create Account: Account Information/Address Information/Additional Information/Description
+Кнопка Next:
+  role: button
+  name: Next
+Кнопка Previous:
+  role: button
+  name: Previous
