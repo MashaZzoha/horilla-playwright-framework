@@ -16,22 +16,22 @@ class Checker:
         """
         self.ctx = context
 
-    @step("Проверить {logentry}")
-    def check_user_exists(self, logentry: str, timeout: int = 10, interval: int = 2):
+    @step("Проверить создание лида: {email}")
+    def check_lead_created(self, email: str, timeout: int = 30, interval: int = 2):
         """
-        Проверка данных пользователя в БД
-        :param logentry: logentry
+        Проверка, что лид был успешно создан
+        :param email: электронная почта
         :param timeout: максимальное время ожидания ответа от БД
         :param interval: интервал между повторными запросами
         """
-        # TODO Нужно заменить полезным методом. Сейчас этот метод для проверки логики
         response = []
         start_time = time()
         while time() - start_time < timeout:
-            response = self.ctx.horilla_provider.get_changes_by_logentry(logentry)
+            response = self.ctx.horilla_provider.get_lead_by_email(email)
             sleep(10)
             if response:
                 break
             sleep(interval)
         attach('Получен ответ от БД', body=str(response))
-        assert response, f"Не найдено записи в БД по клиенту {logentry}"
+        assert response, f"Не найдено записи в БД по клиенту c адресом электронной почты: {email}"
+        return self
