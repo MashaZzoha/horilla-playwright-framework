@@ -3,6 +3,7 @@ from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 from playwright.sync_api import expect
 
 from utils.allure_utils import attach, attach_screenshot, step
+from config.settings import settings
 from utils.exceptions import ElementsNotFound, LocatorNotFound
 from utils.logger import get_logger
 
@@ -402,15 +403,24 @@ class BasePage:
         return self
 
     @step('Открыть форму Create Lead или Create Account')
-    def open_form_new(self):
-        """Открыть форму для внесения данных по новому лиду или профилю"""
-        form = 'Форма Create Lead' if self.page('Страница вкладки Sales') else 'Форма Create Account'
+    def open_form_new(self, form: str):
+        """
+        Открыть форму для внесения данных по новому лиду или профилю
+        :param form: форма внесения данных Create Lead или Create Account
+        """
         if self.has_element('Кнопка Add New'):
             self.click('Кнопка Add New')
         else:
             self.click('Кнопка New')
         assert self.has_element(form), f"Не открылась форма '{form}'"
         return self
+
+    @staticmethod
+    def get_owner():
+        """Получить данные: имя и фамилию админа из settings.yaml"""
+        first_name = settings.users['admin'].get('first_name')  # "Зинаида"
+        last_name = settings.users['admin'].get('last_name')
+        return f"{first_name} {last_name}"
 
     def refresh_page(self, timeout=None):
         """Обновить страницу (по умолчанию 30 сек)"""
